@@ -65,7 +65,7 @@ go install github.com/storyicon/powerproto/cmd/powerproto
 
 ### II. out-of-the-box version
 
-You can download the out-of-the-box version via the `Github Release Page`.
+You can download the out-of-the-box version via the [`Github Release Page`](https://github.com/storyicon/powerproto/releases)
 
 
 ## Command Introduction

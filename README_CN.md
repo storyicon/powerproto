@@ -66,7 +66,7 @@ go install github.com/storyicon/powerproto/cmd/powerproto@latest
 
 ### 二、开箱即用版本
 
-可以通过 `Github Release Page` 下载开箱即用版本。
+可以通过 [`Github Release Page`](https://github.com/storyicon/powerproto/releases) 下载开箱即用版本。
 
 ## 命令介绍
 
