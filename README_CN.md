@@ -77,6 +77,7 @@ powerproto -h
 powerproto init -h
 powerproto tidy -h
 powerproto build -h
+powerproto env -h
 ```
 
 它的好处是命令行中的文档永远和你的二进制版本保持一致。而Github上的文档可能会一直是对应最新的二进制。

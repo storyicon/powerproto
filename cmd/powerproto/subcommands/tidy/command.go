@@ -57,6 +57,7 @@ func tidy(ctx context.Context,
 	return nil
 }
 
+// CommandTidy is used to clean the config file
 // By default, clean the powerproto.yaml of the current directory and all parent directories
 // You can also explicitly specify the configuration file to clean up
 func CommandTidy(log logger.Logger) *cobra.Command {
@@ -66,7 +67,9 @@ func CommandTidy(log logger.Logger) *cobra.Command {
 		Short: "tidy the config file. It will replace the version number and install the protoc and proto plugins that declared in the config file",
 		Run: func(cmd *cobra.Command, args []string) {
 			ctx := cmd.Context()
+			log.SetLogLevel(logger.LevelInfo)
 			if debugMode {
+				log.SetLogLevel(logger.LevelDebug)
 				ctx = consts.WithDebugMode(ctx)
 				log.LogWarn(nil, "running in debug mode")
 			}

@@ -44,7 +44,7 @@ PowerProto is used to solve the following three main problems:
 5. support batch and recursive compilation of proto files to improve efficiency.
 6. cross-platform support PostAction, you can perform some routine operations (such as replacing "omitempty" in all generated files) after the compilation.
 7. support PostShell, execute specific shell scripts after the compilation.
-8. support `google apis` one-click installation and version control。
+8. support google apis one-click installation and version control。
 
 ## Installation and Dependencies
 
@@ -61,7 +61,7 @@ PowerProto is used to solve the following three main problems:
 Installation can be performed by executing the following command directly:
 
 ```
-go install github.com/storyicon/powerproto/cmd/powerproto
+go install github.com/storyicon/powerproto/cmd/powerproto@latest
 ```
 
 ### II. out-of-the-box version
@@ -78,6 +78,7 @@ powerproto -h
 powerproto init -h
 powerproto tidy -h
 powerproto build -h
+powerproto env -h
 ```
 
 It has the advantage that the documentation on the command line is always consistent with your binary version.

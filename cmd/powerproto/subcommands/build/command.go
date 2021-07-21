@@ -42,7 +42,7 @@ compile proto files and execute the post actions/shells:
 	powerproto build -r -a [dir]
 `
 
-// compile proto files
+// CommandBuild is used to compile proto files
 // powerproto build -r .
 // powerproto build .
 // powerproto build xxxxx.proto
@@ -57,17 +57,19 @@ func CommandBuild(log logger.Logger) *cobra.Command {
 		Long:  strings.TrimSpace(description),
 		Args:  cobra.ExactArgs(1),
 		Run: func(cmd *cobra.Command, args []string) {
+			log.SetLogLevel(logger.LevelInfo)
 			ctx := cmd.Context()
+			if debugMode {
+				ctx = consts.WithDebugMode(ctx)
+				log.LogWarn(nil, "running in debug mode")
+				log.SetLogLevel(logger.LevelDebug)
+			}
 			if dryRun {
 				ctx = consts.WithDryRun(ctx)
 				log.LogWarn(nil, "running in dryRun mode")
 			}
 			if !postScriptEnabled {
 				ctx = consts.WithDisableAction(ctx)
-			}
-			if debugMode {
-				ctx = consts.WithDebugMode(ctx)
-				log.LogWarn(nil, "running in debug mode")
 			}
 
 			target, err := filepath.Abs(args[0])

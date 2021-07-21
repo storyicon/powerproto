@@ -110,7 +110,7 @@ func GetFilesWithExtRecursively(target string, targetExt string) ([]string, erro
 	return data, err
 }
 
-// GetFilesWithExtRecursively is used to list files with a specific suffix
+// GetFilesWithExt is used to list files with a specific suffix
 // expectExt should contain the prefix '.'
 func GetFilesWithExt(dir string, targetExt string) ([]string, error) {
 	children, err := ioutil.ReadDir(dir)

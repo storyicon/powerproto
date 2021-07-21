@@ -31,7 +31,7 @@ import (
 // StepTidyConfig is used to tidy configs by proto file targets
 func StepTidyConfig(ctx context.Context, targets []string) error {
 	log := logger.NewDefault("tidy")
-	log.SetLogLevel(logger.LevelError)
+	log.SetLogLevel(logger.LevelInfo)
 	if consts.IsDebugMode(ctx) {
 		log.SetLogLevel(logger.LevelDebug)
 	}
@@ -72,7 +72,7 @@ func StepTidyConfig(ctx context.Context, targets []string) error {
 	return nil
 }
 
-// StepTidyConfig is used clean config
+// StepTidyConfigFile is used clean config
 // It will amend the 'latest' version to the latest version number in 'vx.y.z' format
 func StepTidyConfigFile(ctx context.Context,
 	pluginManager pluginmanager.PluginManager,

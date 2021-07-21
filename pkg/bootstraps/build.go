@@ -290,7 +290,7 @@ func StepPostShell(ctx context.Context,
 // Compile is used to compile proto files
 func Compile(ctx context.Context, targets []string) error {
 	log := logger.NewDefault("compile")
-	log.SetLogLevel(logger.LevelError)
+	log.SetLogLevel(logger.LevelInfo)
 	if consts.IsDebugMode(ctx) {
 		log.SetLogLevel(logger.LevelDebug)
 	}

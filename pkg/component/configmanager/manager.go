@@ -46,7 +46,7 @@ type BasicConfigManager struct {
 	treeLock sync.RWMutex
 }
 
-// New is used to create a basic ConfigManager
+// NewBasicConfigManager is used to create a basic ConfigManager
 func NewBasicConfigManager(log logger.Logger) (*BasicConfigManager, error) {
 	return &BasicConfigManager{
 		Logger: log.NewLogger("configmanager"),
@@ -54,7 +54,7 @@ func NewBasicConfigManager(log logger.Logger) (*BasicConfigManager, error) {
 	}, nil
 }
 
-// GetCompiler is used to get config of specified proto file path
+// GetConfig is used to get config of specified proto file path
 func (b *BasicConfigManager) GetConfig(ctx context.Context, protoFilePath string) (configs.ConfigItem, error) {
 	possiblePath := configs.ListConfigPaths(filepath.Dir(protoFilePath))
 	for _, configFilePath := range possiblePath {

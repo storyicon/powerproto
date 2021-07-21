@@ -24,10 +24,10 @@ import (
 	"github.com/storyicon/powerproto/pkg/util/logger"
 )
 
-// Print environment variables related to program operation
+// CommandEnv is used to print environment variables related to program operation
 func CommandEnv(log logger.Logger) *cobra.Command {
 	return &cobra.Command{
-		Use: "env",
+		Use:   "env",
 		Short: "list the environments and binary files",
 		Run: func(cmd *cobra.Command, args []string) {
 			log.LogInfo(nil, "[ENVIRONMENT]")
@@ -41,7 +41,7 @@ func CommandEnv(log logger.Logger) *cobra.Command {
 			}
 
 			log.LogInfo(nil, "[BIN]")
-			for _, key := range []string {
+			for _, key := range []string{
 				"go",
 				"git",
 			} {

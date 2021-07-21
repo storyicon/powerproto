@@ -51,10 +51,10 @@ func NewBasicActionManager(log logger.Logger) (*BasicActionManager, error) {
 	return &BasicActionManager{
 		Logger: log.NewLogger("actionmanager"),
 		actions: map[string]actions.ActionFunc{
-			"move":      actions.ActionMove,
+			"move":    actions.ActionMove,
 			"replace": actions.ActionReplace,
-			"remove":      actions.ActionRemove,
-			"copy":      actions.ActionCopy,
+			"remove":  actions.ActionRemove,
+			"copy":    actions.ActionCopy,
 		},
 	}, nil
 }

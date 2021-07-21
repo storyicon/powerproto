@@ -83,7 +83,7 @@ func LoadConfigs(path string) ([]*Config, error) {
 	return ret, nil
 }
 
-// Similar to LoadConfigs, but obtains the abstraction of the Config prototype structure
+// LoadConfigItems is similar to LoadConfigs, but obtains the abstraction of the Config prototype structure
 func LoadConfigItems(path string) ([]ConfigItem, error) {
 	data, err := LoadConfigs(path)
 	if err != nil {

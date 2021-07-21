@@ -36,7 +36,7 @@ type BasicCompilerManager struct {
 	configManager configmanager.ConfigManager
 	pluginManager pluginmanager.PluginManager
 
-	tree map[string]Compiler
+	tree     map[string]Compiler
 	treeLock sync.RWMutex
 }
 
@@ -51,7 +51,7 @@ func NewCompilerManager(ctx context.Context,
 	return NewBasicCompilerManager(ctx, log, configManager, pluginManager)
 }
 
-// BasicCompilerManager is used to create basic CompilerManager
+// NewBasicCompilerManager is used to create basic CompilerManager
 func NewBasicCompilerManager(ctx context.Context,
 	log logger.Logger,
 	configManager configmanager.ConfigManager,

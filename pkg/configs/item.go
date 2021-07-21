@@ -28,7 +28,7 @@ type ConfigItem interface {
 	Config() *Config
 }
 
-// GetConfigs is used to generate Config from given config entity
+// GetConfigItems is used to generate ConfigItem from given config entity
 func GetConfigItems(data []*Config, path string) []ConfigItem {
 	ret := make([]ConfigItem, 0, len(data))
 	for i, item := range data {

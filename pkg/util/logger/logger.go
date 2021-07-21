@@ -58,6 +58,7 @@ type Config struct {
 	Level  Level
 }
 
+// Level is the structure of log level
 type Level struct {
 	Name   string
 	Color  color.Attribute
@@ -65,6 +66,7 @@ type Level struct {
 	Writer io.Writer
 }
 
+// defines a set of log level
 var (
 	LevelDebug = Level{Name: "debug", Color: color.FgWhite, Index: 0, Writer: os.Stdout}
 	LevelInfo  = Level{Name: "info", Color: color.FgWhite, Index: 1, Writer: os.Stdout}

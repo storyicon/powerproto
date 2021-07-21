@@ -71,4 +71,3 @@ func LoadConfig(filename string, pointer interface{}) error {
 
 	return nil
 }
-
