@@ -29,8 +29,6 @@ import (
 	"github.com/pkg/errors"
 
 	"github.com/storyicon/powerproto/pkg/util"
-	"github.com/storyicon/powerproto/pkg/util/command"
-	"github.com/storyicon/powerproto/pkg/util/logger"
 )
 
 // ProtocRelease defines the release of protoc
@@ -105,34 +103,6 @@ func IsProtocInstalled(ctx context.Context, storageDir string, version string) (
 		return false, "", err
 	}
 	return exists, local, nil
-}
-
-// ErrGitList defines the git list error
-type ErrGitList struct {
-	*command.ErrCommandExec
-}
-
-// ListGitTags is used to list the git tags of specified repository
-func ListGitTags(ctx context.Context, log logger.Logger, repo string) ([]string, error) {
-	data, err := command.Execute(ctx, log, "", "git", []string{
-		"ls-remote", "--tags", "--refs", "--sort", "version:refname", repo,
-	}, nil)
-	if err != nil {
-		return nil, &ErrGitList{
-			ErrCommandExec: err,
-		}
-	}
-	var tags []string
-	for _, line := range strings.Split(string(data), "\n") {
-		f := strings.Fields(line)
-		if len(f) != 2 {
-			continue
-		}
-		if strings.HasPrefix(f[1], "refs/tags/") {
-			tags = append(tags, strings.TrimPrefix(f[1], "refs/tags/"))
-		}
-	}
-	return tags, nil
 }
 
 func inferProtocReleaseSuffix() (string, error) {

@@ -43,6 +43,7 @@ PowerProto is used to solve the following three main problems:
 5. support batch and recursive compilation of proto files to improve efficiency.
 6. cross-platform support PostAction, you can perform some routine operations (such as replacing "omitempty" in all generated files) after the compilation.
 7. support PostShell, execute specific shell scripts after the compilation.
+8. support `google apis` one-click installation and version control。
 
 ## Installation and Dependencies
 
@@ -110,6 +111,9 @@ Tidy the config consists of two main operations:
 2. install all dependencies defined in the config file.
 
 
+Supports entering `debug mode` by appending the `-d` argument to see more detailed logs.
+
+
 ### III. Compiling Proto files
 
 The Proto file can be compiled with the following command.
@@ -132,6 +136,22 @@ The execution logic is that for each proto file, the `powerproto.yaml` config fi
 3. Compile the proto file according to the `plugins`, `protoc`, `options`, `importPaths` and other configs in the config file。 After all the proto files are compiled, if you specify the `-p` argument, `PostAction` and `PostShell` will also be executed.
 
 Note: The default `working directory` of `PowerProto` is the directory where the `proto file` matches to the config file, it is equivalent to the directory where you execute the `protoc` command. You can change it via `protocWorkDir` in the config file.
+
+
+Supports entering `debug mode` by appending the `-d` argument to see more detailed logs.
+
+Supports entering `dryRun mode` by appending the `-y` argument, in this mode the commands are not actually executed, but just printed out, which is very useful for debugging.
+
+### IV. View environment variables
+
+If your command keeps getting stuck in a certain state, there is a high probability that there is a network problem.        
+
+You can check if the environment variables are configured successfully with the following command:
+
+```
+powerproto env
+```
+
 
 ## Examples
 
@@ -227,6 +247,9 @@ protoc: 3.17.3
 # the default is the directory where the config file is located.
 # support mixed environment variables in path, such as $GOPATH
 protocWorkDir: ""
+# optional. If you need to use googleapis, you should fill in the commit id of googleapis here.
+# You can fill in the latest, it will be automatically converted to the latest version.
+googleapis: 75e9812478607db997376ccea247dd6928f70f45
 # required. it is used to describe which plug-ins are required for compilation
 plugins:
     # the name, path, and version number of the plugin.
@@ -244,13 +267,19 @@ options:
     - --grpc-gateway_out=.
     - --go-grpc_out=paths=source_relative:.
 # required. defines the path of the proto dependency, which will be converted to the --proto_path (-I) parameter.
-# support mixed environment variables, such as $GOPATH/include.
-# $POWERPROTO_INCLUDE is a special variable that refers to $POWERPROTO_HOME/include, which contains the public proto files provided by protoc by default.
-# "." is the folder where the config file is located.
 importPaths:
+    # Special variables. Will be replaced with the folder where the current configuration file is located.
     - .
+    # Environment variables. Environment variables can be used in importPaths.
+    # Support mixed writing like $GOPATH/include
     - $GOPATH
+    # Special variables. Will be replaced with the local path to the public proto file that comes with protoc by default
     - $POWERPROTO_INCLUDE
+    # Special variables. Reference to the directory where the proto file to be compiled is located
+    # For example, if /a/b/data.proto is to be compiled, then the /a/b directory will be automatically referenced
+    - $SOURCE_RELATIVE
+    # Special variables. Will be replaced with the local path to the version of google apis specified by the googleapis field
+    - $POWERPROTO_GOOGLEAPIS
 # optional. The operation is executed after compilation.
 # its working directory is the directory where the config file is located.
 # postActions is cross-platform compatible.
@@ -281,6 +310,7 @@ scopes:
     - ./apis1
 protoc: v3.17.3
 protocWorkDir: ""
+googleapis: 75e9812478607db997376ccea247dd6928f70f45
 plugins:
     protoc-gen-go: google.golang.org/protobuf/cmd/protoc-gen-go@v1.25.0
     protoc-gen-go-grpc: google.golang.org/grpc/cmd/protoc-gen-go-grpc@v1.1.0
@@ -302,6 +332,7 @@ scopes:
     - ./apis2
 protoc: v3.17.3
 protocWorkDir: ""
+googleapis: 75e9812478607db997376ccea247dd6928f70f45
 plugins:
     protoc-gen-go: google.golang.org/protobuf/cmd/protoc-gen-go@v1.27.0
     protoc-gen-go-grpc: google.golang.org/grpc/cmd/protoc-gen-go-grpc@v1.1.0

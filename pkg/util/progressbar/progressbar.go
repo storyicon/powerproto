@@ -15,11 +15,15 @@
 package progressbar
 
 import (
+	"context"
 	"fmt"
 
 	"github.com/fatih/color"
 	"github.com/vbauerster/mpb/v7"
 	"github.com/vbauerster/mpb/v7/decor"
+
+	"github.com/storyicon/powerproto/pkg/consts"
+	"github.com/storyicon/powerproto/pkg/util/logger"
 )
 
 // ProgressBar implements a customizable progress bar
@@ -58,10 +62,12 @@ func newEmbedProgressBar(container *mpb.Progress, bar *mpb.Bar) *progressBar {
 	}
 }
 
+// Incr is used to increase progress
 func (s *progressBar) Incr() {
 	s.bar.Increment()
 }
 
+// Wait is used to wait for the rendering of the progress bar to complete
 func (s *progressBar) Wait() {
 	s.container.Wait()
 }
@@ -79,8 +85,50 @@ func getSpinner() []string {
 	}
 }
 
+type fakeProgressbar struct {
+	prefix  string
+	suffix  string
+	total   int
+	current int
+	logger.Logger
+}
+
+func (f *fakeProgressbar) Incr() {
+	if f.current < f.total {
+		f.current++
+	}
+}
+
+// Wait is used to wait for the rendering of the progress bar to complete
+func (f *fakeProgressbar) Wait() {}
+
+// SetSuffix is used to set the prefix of progress bar
+func (f *fakeProgressbar) SetPrefix(format string, args ...interface{}) {
+	f.prefix = fmt.Sprintf(format, args...)
+}
+
+// SetSuffix is used to set the suffix of progress bar
+func (f *fakeProgressbar) SetSuffix(format string, args ...interface{}) {
+	f.suffix = fmt.Sprintf(format, args...)
+	f.LogInfo(map[string]interface{}{
+		"progress": fmt.Sprintf("%3.f", float64(f.current)/float64(f.total)*100),
+		"stage":    f.prefix,
+	}, f.suffix)
+}
+
+func newFakeProgressbar(total int) ProgressBar {
+	return &fakeProgressbar{
+		total:  total,
+		Logger: logger.NewDefault("progress"),
+	}
+}
+
 // GetProgressBar is used to get progress bar
-func GetProgressBar(count int) ProgressBar {
+func GetProgressBar(ctx context.Context, count int) ProgressBar {
+	if consts.IsDebugMode(ctx) {
+		return newFakeProgressbar(count)
+	}
+
 	var progressBar *progressBar
 	container := mpb.New()
 	bar := container.Add(int64(count),

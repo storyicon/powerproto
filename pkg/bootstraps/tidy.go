@@ -22,6 +22,7 @@ import (
 	"github.com/storyicon/powerproto/pkg/component/configmanager"
 	"github.com/storyicon/powerproto/pkg/component/pluginmanager"
 	"github.com/storyicon/powerproto/pkg/configs"
+	"github.com/storyicon/powerproto/pkg/consts"
 	"github.com/storyicon/powerproto/pkg/util"
 	"github.com/storyicon/powerproto/pkg/util/logger"
 	"github.com/storyicon/powerproto/pkg/util/progressbar"
@@ -31,6 +32,9 @@ import (
 func StepTidyConfig(ctx context.Context, targets []string) error {
 	log := logger.NewDefault("tidy")
 	log.SetLogLevel(logger.LevelError)
+	if consts.IsDebugMode(ctx) {
+		log.SetLogLevel(logger.LevelDebug)
+	}
 
 	configManager, err := configmanager.NewConfigManager(log)
 	if err != nil {
@@ -53,7 +57,7 @@ func StepTidyConfig(ctx context.Context, targets []string) error {
 		return nil
 	}
 
-	progress := progressbar.GetProgressBar(len(configPaths))
+	progress := progressbar.GetProgressBar(ctx, len(configPaths))
 	progress.SetPrefix("tidy configs")
 	for path := range configPaths {
 		progress.SetSuffix(path)

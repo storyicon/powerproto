@@ -24,6 +24,7 @@ import (
 	"github.com/storyicon/powerproto/pkg/bootstraps"
 	"github.com/storyicon/powerproto/pkg/component/pluginmanager"
 	"github.com/storyicon/powerproto/pkg/configs"
+	"github.com/storyicon/powerproto/pkg/consts"
 	"github.com/storyicon/powerproto/pkg/util"
 	"github.com/storyicon/powerproto/pkg/util/logger"
 	"github.com/storyicon/powerproto/pkg/util/progressbar"
@@ -32,7 +33,7 @@ import (
 func tidy(ctx context.Context,
 	pluginManager pluginmanager.PluginManager,
 	configFilePath string) error {
-	progress := progressbar.GetProgressBar(1)
+	progress := progressbar.GetProgressBar(ctx, 1)
 	progress.SetPrefix("tidy config")
 	err := bootstraps.StepTidyConfigFile(ctx, pluginManager, progress, configFilePath)
 	if err != nil {
@@ -47,6 +48,9 @@ func tidy(ctx context.Context,
 	if err := bootstraps.StepInstallProtoc(ctx, pluginManager, configItems); err != nil {
 		return err
 	}
+	if err := bootstraps.StepInstallGoogleAPIs(ctx, pluginManager, configItems); err != nil {
+		return err
+	}
 	if err := bootstraps.StepInstallPlugins(ctx, pluginManager, configItems); err != nil {
 		return err
 	}
@@ -56,10 +60,17 @@ func tidy(ctx context.Context,
 // By default, clean the powerproto.yaml of the current directory and all parent directories
 // You can also explicitly specify the configuration file to clean up
 func CommandTidy(log logger.Logger) *cobra.Command {
-	return &cobra.Command{
+	var debugMode bool
+	cmd := &cobra.Command{
 		Use:   "tidy [config file]",
 		Short: "tidy the config file. It will replace the version number and install the protoc and proto plugins that declared in the config file",
 		Run: func(cmd *cobra.Command, args []string) {
+			ctx := cmd.Context()
+			if debugMode {
+				ctx = consts.WithDebugMode(ctx)
+				log.LogWarn(nil, "running in debug mode")
+			}
+
 			var targets []string
 			if len(args) != 0 {
 				for _, arg := range args {
@@ -90,7 +101,7 @@ func CommandTidy(log logger.Logger) *cobra.Command {
 					continue
 				}
 				log.LogInfo(nil, "tidy %s", path)
-				if err := tidy(cmd.Context(), pluginManager, path); err != nil {
+				if err := tidy(ctx, pluginManager, path); err != nil {
 					log.LogFatal(map[string]interface{}{
 						"path": path,
 						"err":  err,
@@ -105,4 +116,7 @@ func CommandTidy(log logger.Logger) *cobra.Command {
 			log.LogInfo(nil, "\r\nsucceeded, you are ready to go :)")
 		},
 	}
+	flags := cmd.PersistentFlags()
+	flags.BoolVarP(&debugMode, "debug", "d", debugMode, "debug mode")
+	return cmd
 }

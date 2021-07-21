@@ -21,7 +21,7 @@ import (
 
 	"github.com/pkg/errors"
 
-	"github.com/storyicon/powerproto/pkg/util/command"
+	"github.com/storyicon/powerproto/pkg/consts"
 	"github.com/storyicon/powerproto/pkg/util/logger"
 )
 
@@ -35,13 +35,18 @@ func ActionRemove(ctx context.Context, log logger.Logger, args []string, options
 		}
 		path := filepath.Join(filepath.Dir(options.ConfigFilePath), arg)
 
-		if command.IsDryRun(ctx) {
+		if consts.IsDryRun(ctx) {
 			log.LogInfo(map[string]interface{}{
 				"action": "remove",
 				"target": path,
-			}, "DryRun")
+			}, consts.TextDryRun)
 			return nil
 		}
+
+		log.LogDebug(map[string]interface{}{
+			"action": "remove",
+			"target": path,
+		}, consts.TextExecuteAction)
 
 		if err := os.RemoveAll(path); err != nil {
 			return err

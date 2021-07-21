@@ -23,8 +23,8 @@ import (
 
 	"github.com/pkg/errors"
 
+	"github.com/storyicon/powerproto/pkg/consts"
 	"github.com/storyicon/powerproto/pkg/util"
-	"github.com/storyicon/powerproto/pkg/util/command"
 	"github.com/storyicon/powerproto/pkg/util/logger"
 )
 
@@ -59,15 +59,21 @@ func ActionReplace(ctx context.Context, log logger.Logger, args []string, option
 			panic(err)
 		}
 		if matched {
-			if command.IsDryRun(ctx) {
+			if consts.IsDryRun(ctx) {
 				log.LogInfo(map[string]interface{}{
 					"action": "replace",
 					"file":   path,
 					"from":   from,
 					"to":     to,
-				}, "DryRun")
+				}, consts.TextDryRun)
 				return nil
 			}
+			log.LogDebug(map[string]interface{}{
+				"action": "replace",
+				"file":   path,
+				"from":   from,
+				"to":     to,
+			}, consts.TextExecuteAction)
 			data, err := ioutil.ReadFile(path)
 			if err != nil {
 				return err

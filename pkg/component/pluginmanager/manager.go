@@ -41,7 +41,17 @@ type PluginManager interface {
 	// InstallPlugin is used to install plugin
 	InstallPlugin(ctx context.Context, path string, version string) (local string, err error)
 
-	// GetProtocLatestVersion is used to geet the latest version of protoc
+	// GetGoogleAPIsLatestVersion is used to get the latest version of google apis
+	GetGoogleAPIsLatestVersion(ctx context.Context) (string, error)
+	// InstallGoogleAPIs is used to install google apis
+	InstallGoogleAPIs(ctx context.Context, commitId string) (local string, err error)
+	// ListGoogleAPIsVersions is used to list protoc version
+	ListGoogleAPIsVersions(ctx context.Context) ([]string, error)
+	// IsGoogleAPIsInstalled is used to check whether the protoc is installed
+	IsGoogleAPIsInstalled(ctx context.Context, commitId string) (bool, string, error)
+	// GoogleAPIsPath  returns the googleapis path
+	GoogleAPIsPath(ctx context.Context, commitId string) string
+	// GetProtocLatestVersion is used to get the latest version of protoc
 	GetProtocLatestVersion(ctx context.Context) (string, error)
 	// ListProtocVersions is used to list protoc version
 	ListProtocVersions(ctx context.Context) ([]string, error)
@@ -130,6 +140,82 @@ func (b *BasicPluginManager) InstallPlugin(ctx context.Context, path string, ver
 	return InstallPluginUsingGo(ctx, b.Logger, b.storageDir, path, version)
 }
 
+// GetGoogleAPIsLatestVersion is used to get the latest version of google apis
+func (b *BasicPluginManager) GetGoogleAPIsLatestVersion(ctx context.Context) (string, error) {
+	versions, err := b.ListGoogleAPIsVersions(ctx)
+	if err != nil {
+		return "", err
+	}
+	if len(versions) == 0 {
+		return "", errors.New("no version list")
+	}
+	return versions[len(versions)-1], nil
+}
+
+// InstallGoogleAPIs is used to install google apis
+func (b *BasicPluginManager) InstallGoogleAPIs(ctx context.Context, commitId string) (string, error) {
+	ctx, cancel := context.WithTimeout(ctx, defaultExecuteTimeout)
+	defer cancel()
+	local := PathForGoogleAPIs(b.storageDir, commitId)
+	exists, err := util.IsDirExists(local)
+	if err != nil {
+		return "", err
+	}
+	if exists {
+		return local, nil
+	}
+	release, err := GetGoogleAPIRelease(ctx, commitId)
+	if err != nil {
+		return "", err
+	}
+	defer release.Clear()
+	if err := util.CopyDirectory(release.GetDir(), local); err != nil {
+		return "", err
+	}
+	return local, nil
+}
+
+// ListGoogleAPIsVersions is used to list protoc version
+func (b *BasicPluginManager) ListGoogleAPIsVersions(ctx context.Context) ([]string, error) {
+	ctx, cancel := context.WithTimeout(ctx, defaultExecuteTimeout)
+	defer cancel()
+
+	b.versionsLock.RLock()
+	versions, ok := b.versions["googleapis"]
+	b.versionsLock.RUnlock()
+	if ok {
+		return versions, nil
+	}
+	versions, err := ListGitCommitIds(ctx, b.Logger, consts.GoogleAPIsRepository)
+	if err != nil {
+		return nil, err
+	}
+	b.versionsLock.Lock()
+	b.versions["googleapis"] = versions
+	b.versionsLock.Unlock()
+	return versions, nil
+}
+
+// IsGoogleAPIsInstalled is used to check whether the protoc is installed
+func (b *BasicPluginManager) IsGoogleAPIsInstalled(ctx context.Context, commitId string) (bool, string, error) {
+	local := PathForGoogleAPIs(b.storageDir, commitId)
+	exists, err := util.IsDirExists(local)
+	return exists, local, err
+}
+
+// GoogleAPIsPath returns the googleapis path
+func (b *BasicPluginManager) GoogleAPIsPath(ctx context.Context, commitId string) string {
+	return PathForGoogleAPIs(b.storageDir, commitId)
+}
+
+// IsProtocInstalled is used to check whether the protoc is installed
+func (b *BasicPluginManager) IsProtocInstalled(ctx context.Context, version string) (bool, string, error) {
+	if strings.HasPrefix(version, "v") {
+		version = strings.TrimPrefix(version, "v")
+	}
+	return IsProtocInstalled(ctx, b.storageDir, version)
+}
+
 // GetProtocLatestVersion is used to geet the latest version of protoc
 func (b *BasicPluginManager) GetProtocLatestVersion(ctx context.Context) (string, error) {
 	versions, err := b.ListProtocVersions(ctx)
@@ -161,14 +247,6 @@ func (b *BasicPluginManager) ListProtocVersions(ctx context.Context) ([]string, 
 	b.versions["protoc"] = versions
 	b.versionsLock.Unlock()
 	return versions, nil
-}
-
-// IsProtocInstalled is used to check whether the protoc is installed
-func (b *BasicPluginManager) IsProtocInstalled(ctx context.Context, version string) (bool, string, error) {
-	if strings.HasPrefix(version, "v") {
-		version = strings.TrimPrefix(version, "v")
-	}
-	return IsProtocInstalled(ctx, b.storageDir, version)
 }
 
 // InstallProtoc is used to install protoc of specified version

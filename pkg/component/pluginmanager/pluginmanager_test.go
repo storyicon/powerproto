@@ -70,4 +70,22 @@ var _ = Describe("Pluginmanager", func() {
 		Expect(exists).To(BeTrue())
 		Expect(len(local) != 0).To(BeTrue())
 	})
+	It("should able to install googleapis", func() {
+		versions, err := manager.ListGoogleAPIsVersions(context.TODO())
+		Expect(err).To(BeNil())
+		Expect(len(versions) > 0).To(BeTrue())
+
+		latestVersion, err := manager.GetGoogleAPIsLatestVersion(context.TODO())
+		Expect(err).To(BeNil())
+		Expect(latestVersion).To(Equal(versions[len(versions)-1]))
+
+		local, err := manager.InstallGoogleAPIs(context.TODO(), latestVersion)
+		Expect(err).To(BeNil())
+		Expect(len(local) > 0).To(BeTrue())
+
+		exists, local, err := manager.IsGoogleAPIsInstalled(context.TODO(), latestVersion)
+		Expect(err).To(BeNil())
+		Expect(exists).To(BeTrue())
+		Expect(len(local) != 0).To(BeTrue())
+	})
 })

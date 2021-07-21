@@ -22,8 +22,8 @@ import (
 	"github.com/spf13/cobra"
 
 	"github.com/storyicon/powerproto/pkg/bootstraps"
+	"github.com/storyicon/powerproto/pkg/consts"
 	"github.com/storyicon/powerproto/pkg/util"
-	"github.com/storyicon/powerproto/pkg/util/command"
 	"github.com/storyicon/powerproto/pkg/util/logger"
 )
 
@@ -48,8 +48,8 @@ compile proto files and execute the post actions/shells:
 // powerproto build xxxxx.proto
 func CommandBuild(log logger.Logger) *cobra.Command {
 	var recursive bool
-	// todo: this feature is still under development
 	var dryRun bool
+	var debugMode bool
 	var postScriptEnabled bool
 	cmd := &cobra.Command{
 		Use:   "build [dir|proto file]",
@@ -59,10 +59,15 @@ func CommandBuild(log logger.Logger) *cobra.Command {
 		Run: func(cmd *cobra.Command, args []string) {
 			ctx := cmd.Context()
 			if dryRun {
-				ctx = command.WithDryRun(ctx)
+				ctx = consts.WithDryRun(ctx)
+				log.LogWarn(nil, "running in dryRun mode")
 			}
 			if !postScriptEnabled {
-				ctx = command.WithDisableAction(ctx)
+				ctx = consts.WithDisableAction(ctx)
+			}
+			if debugMode {
+				ctx = consts.WithDebugMode(ctx)
+				log.LogWarn(nil, "running in debug mode")
 			}
 
 			target, err := filepath.Abs(args[0])
@@ -113,5 +118,7 @@ func CommandBuild(log logger.Logger) *cobra.Command {
 	flags := cmd.PersistentFlags()
 	flags.BoolVarP(&recursive, "recursive", "r", recursive, "whether to recursively traverse all child folders")
 	flags.BoolVarP(&postScriptEnabled, "postScriptEnabled", "p", postScriptEnabled, "when this flag is attached, it will allow the execution of postActions and postShell")
+	flags.BoolVarP(&debugMode, "debug", "d", debugMode, "debug mode")
+	flags.BoolVarP(&dryRun, "dryRun", "y", dryRun, "dryRun mode")
 	return cmd
 }

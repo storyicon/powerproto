@@ -50,7 +50,8 @@ func GetDefaultConfig() *configs.Config {
 		Scopes: []string{
 			"./",
 		},
-		Protoc: "latest",
+		Protoc:     "latest",
+		GoogleAPIs: "75e9812478607db997376ccea247dd6928f70f45",
 		Plugins: map[string]string{
 			"protoc-gen-go":      "google.golang.org/protobuf/cmd/protoc-gen-go@latest",
 			"protoc-gen-go-grpc": "google.golang.org/grpc/cmd/protoc-gen-go-grpc@latest",
@@ -64,7 +65,9 @@ func GetDefaultConfig() *configs.Config {
 		ImportPaths: []string{
 			".",
 			"$GOPATH",
-			"$POWERPROTO_INCLUDE",
+			consts.KeyPowerProtoInclude,
+			consts.KeyPowerProtoGoogleAPIs,
+			consts.KeySourceRelative,
 		},
 	}
 }

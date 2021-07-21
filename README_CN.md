@@ -22,6 +22,7 @@ PowerProto主要用于解决下面三个问题：
     - [一、初始化配置](#一初始化配置)
     - [二、整理配置](#二整理配置)
     - [三、编译Proto文件](#三编译proto文件)
+    - [四、查看环境变量](#四查看环境变量)
   - [示例](#示例)
   - [配置文件](#配置文件)
     - [解释](#解释)
@@ -43,6 +44,7 @@ PowerProto主要用于解决下面三个问题：
 5. 支持批量、递归编译proto文件，提高效率。
 6. 跨平台支持PostAction，可以在编译完成之后执行一些常规操作（比如替换掉所有生成文件中的"omitempty"）。
 7. 支持PostShell，在编译完成之后执行特定的shell脚本。
+8. 支持 `google api` 的一键安装与版本控制。
 
 ## 安装与依赖
 
@@ -87,8 +89,6 @@ powerproto build -h
 powerproto init
 ```
 
-
-
 ### 二、整理配置
 
 可以通过下面的命令整理配置：
@@ -110,7 +110,7 @@ powerproto tidy [the path of proto file]
 1. 通过查询，将版本中的latest替换为真实的最新版本号。
 2. 安装配置文件中定义的所有依赖。
 
-
+支持通过 `-d` 参数来进入到`debug模式`，查看更详细的日志。
 
 ### 三、编译Proto文件
 
@@ -135,7 +135,16 @@ powerproto build -r .
 
 注意：`protoc`执行的工作目录默认是`proto文件`匹配到的配置文件所在的目录，它相当于你在配置文件所在目录执行protoc命令。你可以通过配置文件中的 `protocWorkDir` 来进行修改。
 
+支持通过 `-d` 参数来进入到`debug模式`，查看更详细的日志。
+支持通过 `-y` 参数来进入到`dryRun模式`，只打印命令而不真正执行，这对于调试非常有用。
 
+### 四、查看环境变量
+
+如果你的命令一直卡在某个状态，大概率是出现网络问题了。
+你可以通过下面的命令来查看环境变量是否配置成功：
+```
+powerproto env
+```
 
 ## 示例
 
@@ -229,6 +238,9 @@ protoc: 3.17.3
 # 选填，执行protoc命令的工作目录，默认是配置文件所在目录
 # 支持路径中混用环境变量，比如$GOPATH
 protocWorkDir: ""
+# 选填，如果需要使用 googleapis，你应该在这里填写googleapis的commit id
+# 可以填 latest，会自动转换成最新的版本
+googleapis: 75e9812478607db997376ccea247dd6928f70f45
 # 必填，代表scope匹配的目录中的proto文件，在编译时需要用到哪些插件
 plugins:
     # 插件的名字、路径以及版本号。
@@ -245,13 +257,18 @@ options:
     - --grpc-gateway_out=.
     - --go-grpc_out=paths=source_relative:.
 # 必填，定义了构建时 protoc 的引用路径，会被转换为 --proto_path (-I) 参数。
-# 支持混用环境变量，比如 $GOPATH/include。
-# $POWERPROTO_INCLUDE是一个特殊变量，指 $POWERPRTO/include，里面包含了protoc默认提供的公共proto 文件。
-# "." 是指配置文件所在文件夹。
 importPaths:
+    # 特殊变量。代表当前配置文件所在文件夹
     - .
+    # 环境变量。可以使用环境变量
+    # 也支持 $GOPATH/include 这样的混合写法
     - $GOPATH
     - $POWERPROTO_INCLUDE
+    # 特殊变量。引用待编译的proto文件所在的目录
+    # 比如将要编译 /a/b/data.proto，那么 /a/b 目录将会被自动引用
+    - $SOURCE_RELATIVE
+    # 特殊变量。引用googleapis字段所指定的版本的google apis
+    - $POWERPROTO_GOOGLEAPIS
 # 选填，构建完成之后执行的操作，工作目录是配置文件所在目录
 # postActions是跨平台兼容的
 # 注意，必须在 powerproto build 时附加 -p 参数，才会执行配置文件中的postActions
@@ -281,6 +298,7 @@ scopes:
     - ./apis1
 protoc: v3.17.3
 protocWorkDir: ""
+googleapis: 75e9812478607db997376ccea247dd6928f70f45
 plugins:
     protoc-gen-go: google.golang.org/protobuf/cmd/protoc-gen-go@v1.25.0
     protoc-gen-go-grpc: google.golang.org/grpc/cmd/protoc-gen-go-grpc@v1.1.0
@@ -302,6 +320,7 @@ scopes:
     - ./apis2
 protoc: v3.17.3
 protocWorkDir: ""
+googleapis: 75e9812478607db997376ccea247dd6928f70f45
 plugins:
     protoc-gen-go: google.golang.org/protobuf/cmd/protoc-gen-go@v1.27.0
     protoc-gen-go-grpc: google.golang.org/grpc/cmd/protoc-gen-go-grpc@v1.1.0

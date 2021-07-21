@@ -21,8 +21,8 @@ import (
 
 	"github.com/pkg/errors"
 
+	"github.com/storyicon/powerproto/pkg/consts"
 	"github.com/storyicon/powerproto/pkg/util"
-	"github.com/storyicon/powerproto/pkg/util/command"
 	"github.com/storyicon/powerproto/pkg/util/logger"
 )
 
@@ -49,14 +49,20 @@ func ActionMove(ctx context.Context, log logger.Logger, args []string, options *
 		return errors.Errorf("absolute destination %s is not allowed in action move", destination)
 	}
 
-	if command.IsDryRun(ctx) {
+	if consts.IsDryRun(ctx) {
 		log.LogInfo(map[string]interface{}{
 			"action": "move",
 			"from":   absSource,
 			"to":     absDestination,
-		}, "DryRun")
+		}, consts.TextDryRun)
 		return nil
 	}
+
+	log.LogDebug(map[string]interface{}{
+		"action": "move",
+		"from":   absSource,
+		"to":     absDestination,
+	}, consts.TextExecuteAction)
 
 	if err := util.CopyDirectory(absSource, absDestination); err != nil {
 		return err

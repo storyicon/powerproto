@@ -25,8 +25,8 @@ import (
 	"github.com/storyicon/powerproto/pkg/component/configmanager"
 	"github.com/storyicon/powerproto/pkg/component/pluginmanager"
 	"github.com/storyicon/powerproto/pkg/configs"
+	"github.com/storyicon/powerproto/pkg/consts"
 	"github.com/storyicon/powerproto/pkg/util"
-	"github.com/storyicon/powerproto/pkg/util/command"
 	"github.com/storyicon/powerproto/pkg/util/concurrent"
 	"github.com/storyicon/powerproto/pkg/util/logger"
 	"github.com/storyicon/powerproto/pkg/util/progressbar"
@@ -38,7 +38,7 @@ func StepLookUpConfigs(
 	targets []string,
 	configManager configmanager.ConfigManager,
 ) ([]configs.ConfigItem, error) {
-	progress := progressbar.GetProgressBar(len(targets))
+	progress := progressbar.GetProgressBar(ctx, len(targets))
 	progress.SetPrefix("Lookup configs of proto files")
 	var configItems []configs.ConfigItem
 	deduplicate := map[string]struct{}{}
@@ -67,6 +67,57 @@ func StepLookUpConfigs(
 	return configItems, nil
 }
 
+// StepInstallGoogleAPIs is used to install google apis
+func StepInstallGoogleAPIs(ctx context.Context,
+	pluginManager pluginmanager.PluginManager,
+	configItems []configs.ConfigItem) error {
+	deduplicate := map[string]struct{}{}
+	for _, config := range configItems {
+		version := config.Config().GoogleAPIs
+		if version != "" {
+			deduplicate[version] = struct{}{}
+		}
+	}
+	if len(deduplicate) == 0 {
+		return nil
+	}
+
+	progress := progressbar.GetProgressBar(ctx, len(deduplicate))
+	progress.SetPrefix("Install googleapis")
+
+	versionsMap := map[string]struct{}{}
+	for version := range deduplicate {
+		if version == "latest" {
+			progress.SetSuffix("query latest version of googleapis")
+			latestVersion, err := pluginManager.GetGoogleAPIsLatestVersion(ctx)
+			if err != nil {
+				return errors.Wrap(err, "failed to list googleapis versions")
+			}
+			version = latestVersion
+		}
+		progress.SetSuffix("check cache of googleapis %s", version)
+		exists, _, err := pluginManager.IsGoogleAPIsInstalled(ctx, version)
+		if err != nil {
+			return err
+		}
+		if exists {
+			progress.SetSuffix("the %s version of googleapis is already cached", version)
+		} else {
+			progress.SetSuffix("install %s version of googleapis", version)
+			_, err = pluginManager.InstallGoogleAPIs(ctx, version)
+			if err != nil {
+				return err
+			}
+			progress.SetSuffix("the %s version of googleapis is installed", version)
+		}
+		versionsMap[version] = struct{}{}
+		progress.Incr()
+	}
+	progress.Wait()
+	fmt.Println("the following versions of googleapis will be used:", util.SetToSlice(versionsMap))
+	return nil
+}
+
 // StepInstallProtoc is used to install protoc
 func StepInstallProtoc(ctx context.Context,
 	pluginManager pluginmanager.PluginManager,
@@ -74,9 +125,12 @@ func StepInstallProtoc(ctx context.Context,
 	deduplicate := map[string]struct{}{}
 	for _, config := range configItems {
 		version := config.Config().Protoc
+		if version == "" {
+			return errors.Errorf("protoc version is required: %s", config.Path())
+		}
 		deduplicate[version] = struct{}{}
 	}
-	progress := progressbar.GetProgressBar(len(deduplicate))
+	progress := progressbar.GetProgressBar(ctx, len(deduplicate))
 	progress.SetPrefix("Install protoc")
 
 	versionsMap := map[string]struct{}{}
@@ -123,7 +177,7 @@ func StepInstallPlugins(ctx context.Context,
 			deduplicate[pkg] = struct{}{}
 		}
 	}
-	progress := progressbar.GetProgressBar(len(deduplicate))
+	progress := progressbar.GetProgressBar(ctx, len(deduplicate))
 	progress.SetPrefix("Install plugins")
 	pluginsMap := map[string]struct{}{}
 	for pkg := range deduplicate {
@@ -173,7 +227,7 @@ func StepCompile(ctx context.Context,
 	compilerManager compilermanager.CompilerManager,
 	targets []string,
 ) error {
-	progress := progressbar.GetProgressBar(len(targets))
+	progress := progressbar.GetProgressBar(ctx, len(targets))
 	progress.SetPrefix("Compile Proto Files")
 	c := concurrent.NewErrGroup(ctx, 10)
 	for _, target := range targets {
@@ -203,7 +257,7 @@ func StepCompile(ctx context.Context,
 func StepPostAction(ctx context.Context,
 	actionsManager actionmanager.ActionManager,
 	configItems []configs.ConfigItem) error {
-	progress := progressbar.GetProgressBar(len(configItems))
+	progress := progressbar.GetProgressBar(ctx, len(configItems))
 	progress.SetPrefix("PostAction")
 	for _, cfg := range configItems {
 		progress.SetSuffix(cfg.Path())
@@ -220,7 +274,7 @@ func StepPostAction(ctx context.Context,
 func StepPostShell(ctx context.Context,
 	actionsManager actionmanager.ActionManager,
 	configItems []configs.ConfigItem) error {
-	progress := progressbar.GetProgressBar(len(configItems))
+	progress := progressbar.GetProgressBar(ctx, len(configItems))
 	progress.SetPrefix("PostShell")
 	for _, cfg := range configItems {
 		progress.SetSuffix(cfg.Path())
@@ -237,6 +291,9 @@ func StepPostShell(ctx context.Context,
 func Compile(ctx context.Context, targets []string) error {
 	log := logger.NewDefault("compile")
 	log.SetLogLevel(logger.LevelError)
+	if consts.IsDebugMode(ctx) {
+		log.SetLogLevel(logger.LevelDebug)
+	}
 
 	configManager, err := configmanager.NewConfigManager(log)
 	if err != nil {
@@ -259,7 +316,11 @@ func Compile(ctx context.Context, targets []string) error {
 	if err != nil {
 		return err
 	}
+
 	if err := StepInstallProtoc(ctx, pluginManager, configItems); err != nil {
+		return err
+	}
+	if err := StepInstallGoogleAPIs(ctx, pluginManager, configItems); err != nil {
 		return err
 	}
 	if err := StepInstallPlugins(ctx, pluginManager, configItems); err != nil {
@@ -269,7 +330,7 @@ func Compile(ctx context.Context, targets []string) error {
 		return err
 	}
 
-	if !command.IsDisableAction(ctx) {
+	if !consts.IsDisableAction(ctx) {
 		if err := StepPostAction(ctx, actionManager, configItems); err != nil {
 			return err
 		}
@@ -277,7 +338,7 @@ func Compile(ctx context.Context, targets []string) error {
 			return err
 		}
 	} else {
-		log.LogWarn(nil, "PostAction and PostShell is skipped. If you need to allow execution, please append '-a' to command flags to enable")
+		log.LogWarn(nil, "PostAction and PostShell is skipped. If you need to allow execution, please append '-p' to command flags to enable")
 	}
 
 	log.LogInfo(nil, "Good job! you are ready to go :)")

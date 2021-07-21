@@ -29,6 +29,7 @@ import (
 // Config defines the config model
 type Config struct {
 	Scopes        []string          `json:"scopes" yaml:"scopes"`
+	GoogleAPIs    string            `json:"googleapis" yaml:"googleapis"`
 	Protoc        string            `json:"protoc" yaml:"protoc"`
 	ProtocWorkDir string            `json:"protocWorkDir" yaml:"protocWorkDir"`
 	Plugins       map[string]string `json:"plugins" yaml:"plugins"`

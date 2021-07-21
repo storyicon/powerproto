@@ -57,6 +57,27 @@ func GetWellKnownPlugins() []*Plugin {
 			},
 		},
 		{
+			Name: "protoc-gen-openapiv2",
+			Pkg:  "github.com/grpc-ecosystem/grpc-gateway/v2/protoc-gen-openapiv2@latest",
+			Options: []string{
+				"--openapiv2_out=.",
+			},
+		},
+		{
+			Name: "protoc-gen-gogo",
+			Pkg:  "github.com/gogo/protobuf/protoc-gen-gogo@latest",
+			Options: []string{
+				"--gogo_out=.",
+			},
+		},
+		{
+			Name: "protoc-gen-gofast",
+			Pkg:  "github.com/gogo/protobuf/protoc-gen-gofast@latest",
+			Options: []string{
+				"--gofast_out=.",
+			},
+		},
+		{
 			Name: "protoc-gen-deepcopy",
 			Pkg:  "istio.io/tools/cmd/protoc-gen-deepcopy@latest",
 			Options: []string{

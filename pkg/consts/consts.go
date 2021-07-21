@@ -18,9 +18,10 @@ import (
 	"os"
 	"path/filepath"
 
+	"github.com/fatih/color"
+
 	"github.com/storyicon/powerproto/pkg/util/logger"
 )
-
 
 // defines a set of const value
 const (
@@ -28,10 +29,24 @@ const (
 	ConfigFileName = "powerproto.yaml"
 	// The default include can be referenced by this key in import paths
 	KeyPowerProtoInclude = "$POWERPROTO_INCLUDE"
+	// The googleapis can be referenced by this key in import paths
+	KeyPowerProtoGoogleAPIs = "$POWERPROTO_GOOGLEAPIS"
+	// KeySourceRelative can be specified in import paths to refer to
+	// the folder where the current proto file is located
+	KeySourceRelative = "$SOURCE_RELATIVE"
 	// Defines the program directory of PowerProto, including various binary and include files
 	EnvHomeDir = "POWERPROTO_HOME"
 	// ProtobufRepository defines the protobuf repository
 	ProtobufRepository = "https://github.com/protocolbuffers/protobuf"
+	// GoogleAPIsRepository defines the google apis repository
+	GoogleAPIsRepository = "https://github.com/googleapis/googleapis"
+)
+
+// defines a set of text style
+var (
+	TextExecuteAction  = color.HiGreenString("EXECUTE ACTION")
+	TextExecuteCommand = color.HiGreenString("EXECUTE COMMAND")
+	TextDryRun         = color.HiGreenString("DRY RUN")
 )
 
 var homeDir string

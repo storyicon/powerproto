@@ -23,7 +23,6 @@ import (
 	"github.com/storyicon/powerproto/pkg/util"
 )
 
-
 // PathForInclude is used to get the local directory of include files
 func PathForInclude(storageDir string) string {
 	return filepath.Join(storageDir, "include")
@@ -45,6 +44,11 @@ func GetPluginPath(path string, version string) (string, error) {
 		return "", err
 	}
 	return filepath.Join(enc + "@" + encVer), nil
+}
+
+// PathForGoogleAPIs is used to get the google apis path
+func PathForGoogleAPIs(storageDir string, commitId string) string {
+	return filepath.Join(storageDir, "googleapis", commitId)
 }
 
 // PathForPluginDir is used to get the local directory where the specified version plug-in should be stored

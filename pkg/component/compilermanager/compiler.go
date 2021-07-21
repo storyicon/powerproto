@@ -45,9 +45,10 @@ type BasicCompiler struct {
 	config        configs.ConfigItem
 	pluginManager pluginmanager.PluginManager
 
-	protocPath string
-	arguments  []string
-	dir        string
+	protocPath     string
+	arguments      []string
+	googleapisPath string
+	dir            string
 }
 
 // NewCompiler is used to create a compiler
@@ -72,6 +73,9 @@ func NewBasicCompiler(
 		config:        config,
 		pluginManager: pluginManager,
 	}
+	if err := basic.calcGoogleAPIs(ctx); err != nil {
+		return nil, err
+	}
 	if err := basic.calcProto(ctx); err != nil {
 		return nil, err
 	}
@@ -84,11 +88,17 @@ func NewBasicCompiler(
 	return basic, nil
 }
 
-
 // Compile is used to compile proto file
 func (b *BasicCompiler) Compile(ctx context.Context, protoFilePath string) error {
 	arguments := make([]string, len(b.arguments))
 	copy(arguments, b.arguments)
+
+	// contains source relative
+	if util.Contains(b.config.Config().ImportPaths,
+		consts.KeySourceRelative) {
+		arguments = append(arguments, "--proto_path="+filepath.Dir(protoFilePath))
+	}
+
 	arguments = append(arguments, protoFilePath)
 	_, err := command.Execute(ctx,
 		b.Logger, b.dir, b.protocPath, arguments, nil)
@@ -118,6 +128,30 @@ func (b *BasicCompiler) calcDir(ctx context.Context) error {
 	return nil
 }
 
+func (b *BasicCompiler) calcGoogleAPIs(ctx context.Context) error {
+	cfg := b.config.Config()
+	commitId := cfg.GoogleAPIs
+	if commitId == "" {
+		return nil
+	}
+	if !util.Contains(cfg.ImportPaths, consts.KeyPowerProtoGoogleAPIs) {
+		return nil
+	}
+	if commitId == "latest" {
+		latestVersion, err := b.pluginManager.GetGoogleAPIsLatestVersion(ctx)
+		if err != nil {
+			return err
+		}
+		commitId = latestVersion
+	}
+	local, err := b.pluginManager.InstallGoogleAPIs(ctx, commitId)
+	if err != nil {
+		return err
+	}
+	b.googleapisPath = local
+	return nil
+}
+
 func (b *BasicCompiler) calcProto(ctx context.Context) error {
 	cfg := b.config
 	protocVersion := cfg.Config().Protoc
@@ -143,9 +177,17 @@ func (b *BasicCompiler) calcArguments(ctx context.Context) error {
 
 	dir := filepath.Dir(cfg.Path())
 	// build import paths
+Loop:
 	for _, path := range cfg.Config().ImportPaths {
-		if path == consts.KeyPowerProtoInclude {
+		switch path {
+		case consts.KeyPowerProtoInclude:
 			path = b.pluginManager.IncludePath(ctx)
+		case consts.KeyPowerProtoGoogleAPIs:
+			if b.googleapisPath != "" {
+				path = b.googleapisPath
+			}
+		case consts.KeySourceRelative:
+			continue Loop
 		}
 		path = util.RenderPathWithEnv(path)
 		if !filepath.IsAbs(path) {

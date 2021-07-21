@@ -26,8 +26,13 @@ import (
 
 // ContainsEmpty is used to check whether items contains empty string
 func ContainsEmpty(items ...string) bool {
+	return Contains(items, "")
+}
+
+// Contains is used to check whether the target is in items
+func Contains(items []string, target string) bool {
 	for _, item := range items {
-		if item == "" {
+		if item == target {
 			return true
 		}
 	}
