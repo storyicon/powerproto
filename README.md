@@ -14,7 +14,7 @@ PowerProto is used to solve the following three main problems:
 
 
 - [PowerProto](#powerproto)
-  - [Features](#features)
+  - [🎉 Features](#-features)
   - [Installation and Dependencies](#installation-and-dependencies)
     - [I. Installation via Go](#i-installation-via-go)
     - [II. out-of-the-box version](#ii-out-of-the-box-version)
@@ -22,6 +22,7 @@ PowerProto is used to solve the following three main problems:
     - [I. Initial Config](#i-initial-config)
     - [II. Tidy Config](#ii-tidy-config)
     - [III. Compiling Proto files](#iii-compiling-proto-files)
+    - [IV. View environment variables](#iv-view-environment-variables)
   - [Examples](#examples)
   - [Config File](#config-file)
     - [Definition](#definition)
@@ -34,7 +35,7 @@ PowerProto is used to solve the following three main problems:
       - [4. replace](#4-replace)
 
 
-## Features
+## 🎉 Features
 
 1. realize one-click installation and multi-version management of protoc.
 2. realize one-click installation and multi-version management of protoc related plugins (such as protoc-gen-go).
