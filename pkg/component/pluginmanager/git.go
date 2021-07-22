@@ -34,13 +34,13 @@ func GetGitLatestCommitId(ctx context.Context, log logger.Logger, repo string) (
 	}, nil)
 	if err != nil {
 		return "", &ErrGitList{
-			ErrCommandExec: err,
+			ErrCommandExec: err.(*command.ErrCommandExec),
 		}
 	}
 	f := strings.Fields(string(data))
 	if len(f) != 2 {
 		return "", &ErrGitList{
-			ErrCommandExec: err,
+			ErrCommandExec: err.(*command.ErrCommandExec),
 		}
 	}
 	return f[0], nil
@@ -53,7 +53,7 @@ func ListGitCommitIds(ctx context.Context, log logger.Logger, repo string) ([]st
 	}, nil)
 	if err != nil {
 		return nil, &ErrGitList{
-			ErrCommandExec: err,
+			ErrCommandExec: err.(*command.ErrCommandExec),
 		}
 	}
 	var commitIds []string
@@ -74,7 +74,7 @@ func ListGitTags(ctx context.Context, log logger.Logger, repo string) ([]string,
 	}, nil)
 	if err != nil {
 		return nil, &ErrGitList{
-			ErrCommandExec: err,
+			ErrCommandExec: err.(*command.ErrCommandExec),
 		}
 	}
 	var tags []string

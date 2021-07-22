@@ -104,7 +104,7 @@ func (b *BasicCompiler) Compile(ctx context.Context, protoFilePath string) error
 		b.Logger, b.dir, b.protocPath, arguments, nil)
 	if err != nil {
 		return &ErrCompile{
-			ErrCommandExec: err,
+			ErrCommandExec: err.(*command.ErrCommandExec),
 		}
 	}
 	return nil

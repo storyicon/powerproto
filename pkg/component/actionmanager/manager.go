@@ -72,7 +72,7 @@ func (m *BasicActionManager) ExecutePostShell(ctx context.Context, config config
 	if err != nil {
 		return &ErrPostShell{
 			Path:           config.Path(),
-			ErrCommandExec: err,
+			ErrCommandExec: err.(*command.ErrCommandExec),
 		}
 	}
 	return nil

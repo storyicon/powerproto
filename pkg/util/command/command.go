@@ -29,7 +29,7 @@ import (
 // Execute is used to execute commands, return stdout and execute errors
 func Execute(ctx context.Context,
 	log logger.Logger,
-	dir string, name string, arguments []string, env []string) ([]byte, *ErrCommandExec) {
+	dir string, name string, arguments []string, env []string) ([]byte, error) {
 	cmd := exec.CommandContext(ctx, name, arguments...)
 	cmd.Env = append(os.Environ(), env...)
 	cmd.Dir = dir

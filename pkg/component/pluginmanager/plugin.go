@@ -71,7 +71,7 @@ func InstallPluginUsingGo(ctx context.Context,
 	}, []string{"GOBIN=" + dir, "GO111MODULE=on"})
 	if err2 != nil {
 		return "", &ErrGoInstall{
-			ErrCommandExec: err2,
+			ErrCommandExec: err2.(*command.ErrCommandExec),
 		}
 	}
 	return local, nil
@@ -114,7 +114,7 @@ func ListGoPackageVersions(ctx context.Context, log logger.Logger, path string) 
 	})
 	if err != nil {
 		return nil, &ErrGoList{
-			ErrCommandExec: err,
+			ErrCommandExec: err.(*command.ErrCommandExec),
 		}
 	}
 	var module Module
