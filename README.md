@@ -37,14 +37,14 @@ PowerProto is used to solve the following three main problems:
 
 ## 🎉 Features
 
-1. realize one-click installation and multi-version management of protoc.
-2. realize one-click installation and multi-version management of protoc related plugins (such as protoc-gen-go).
+1. one-click installation and multi-version management of protoc.
+2. one-click installation and multi-version management of protoc related plugins (such as protoc-gen-go).
 3. manage the compilation of proto through config file instead of shell script to improve readability and compatibility.
 4. bootstrap generation of config files, cross-platform compatibility, a config can be compiled in multiple platforms with one click.
 5. support batch and recursive compilation of proto files to improve efficiency.
 6. cross-platform support PostAction, you can perform some routine operations (such as replacing "omitempty" in all generated files) after the compilation.
 7. support PostShell, execute specific shell scripts after the compilation.
-8. support google apis one-click installation and version control。
+8. one-click installation and version control of google apis。
 
 ## Installation and Dependencies
 

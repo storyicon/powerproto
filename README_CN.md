@@ -2,7 +2,7 @@
 
 [![Go Report Card](https://goreportcard.com/badge/github.com/storyicon/powerproto?t=2)](https://goreportcard.com/report/github.com/storyicon/powerproto) ![TotalLine](https://img.shields.io/tokei/lines/github/storyicon/powerproto?color=77%2C199%2C31) ![last-commit](https://img.shields.io/github/last-commit/storyicon/powerproto) [![GoDoc](https://godoc.org/github.com/storyicon/powerproto?status.svg)](https://godoc.org/github.com/storyicon/powerproto) 
 
-**中文** | [English](README_CN.md)
+**中文** | [English](README.md)
 
 ![exmpales](./docs/images/exmaple.gif)    
 
