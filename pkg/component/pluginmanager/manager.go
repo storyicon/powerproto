@@ -41,16 +41,17 @@ type PluginManager interface {
 	// InstallPlugin is used to install plugin
 	InstallPlugin(ctx context.Context, path string, version string) (local string, err error)
 
-	// GetGoogleAPIsLatestVersion is used to get the latest version of google apis
-	GetGoogleAPIsLatestVersion(ctx context.Context) (string, error)
-	// InstallGoogleAPIs is used to install google apis
-	InstallGoogleAPIs(ctx context.Context, commitId string) (local string, err error)
-	// ListGoogleAPIsVersions is used to list protoc version
-	ListGoogleAPIsVersions(ctx context.Context) ([]string, error)
-	// IsGoogleAPIsInstalled is used to check whether the protoc is installed
-	IsGoogleAPIsInstalled(ctx context.Context, commitId string) (bool, string, error)
-	// GoogleAPIsPath  returns the googleapis path
-	GoogleAPIsPath(ctx context.Context, commitId string) string
+	// GetGitRepoLatestVersion is used to get the latest version of google apis
+	GetGitRepoLatestVersion(ctx context.Context, uri string) (string, error)
+	// InstallGitRepo is used to install google apis
+	InstallGitRepo(ctx context.Context, uri string, commitId string) (local string, err error)
+	// ListGitRepoVersions is used to list protoc version
+	ListGitRepoVersions(ctx context.Context, uri string) ([]string, error)
+	// IsGitRepoInstalled is used to check whether the protoc is installed
+	IsGitRepoInstalled(ctx context.Context, uri string, commitId string) (bool, string, error)
+	// GitRepoPath  returns the googleapis path
+	GitRepoPath(ctx context.Context, commitId string) string
+
 	// GetProtocLatestVersion is used to get the latest version of protoc
 	GetProtocLatestVersion(ctx context.Context) (string, error)
 	// ListProtocVersions is used to list protoc version
@@ -140,9 +141,9 @@ func (b *BasicPluginManager) InstallPlugin(ctx context.Context, path string, ver
 	return InstallPluginUsingGo(ctx, b.Logger, b.storageDir, path, version)
 }
 
-// GetGoogleAPIsLatestVersion is used to get the latest version of google apis
-func (b *BasicPluginManager) GetGoogleAPIsLatestVersion(ctx context.Context) (string, error) {
-	versions, err := b.ListGoogleAPIsVersions(ctx)
+// GetGitRepoLatestVersion is used to get the latest version of google apis
+func (b *BasicPluginManager) GetGitRepoLatestVersion(ctx context.Context, url string) (string, error) {
+	versions, err := b.ListGitRepoVersions(ctx, url)
 	if err != nil {
 		return "", err
 	}
@@ -152,60 +153,67 @@ func (b *BasicPluginManager) GetGoogleAPIsLatestVersion(ctx context.Context) (st
 	return versions[len(versions)-1], nil
 }
 
-// InstallGoogleAPIs is used to install google apis
-func (b *BasicPluginManager) InstallGoogleAPIs(ctx context.Context, commitId string) (string, error) {
+// InstallGitRepo is used to install google apis
+func (b *BasicPluginManager) InstallGitRepo(ctx context.Context, uri string, commitId string) (string, error) {
 	ctx, cancel := context.WithTimeout(ctx, defaultExecuteTimeout)
 	defer cancel()
-	local := PathForGoogleAPIs(b.storageDir, commitId)
-	exists, err := util.IsDirExists(local)
+	exists, local, err := b.IsGitRepoInstalled(ctx, uri, commitId)
 	if err != nil {
 		return "", err
 	}
 	if exists {
 		return local, nil
 	}
-	release, err := GetGoogleAPIRelease(ctx, commitId)
+	release, err := GetGithubArchive(ctx, uri, commitId)
 	if err != nil {
 		return "", err
 	}
 	defer release.Clear()
-	if err := util.CopyDirectory(release.GetDir(), local); err != nil {
+
+	codePath, err := PathForGitReposCode(b.storageDir, uri, commitId)
+	if err != nil {
+		return "", err
+	}
+	if err := util.CopyDirectory(release.GetLocalDir(), codePath); err != nil {
 		return "", err
 	}
 	return local, nil
 }
 
-// ListGoogleAPIsVersions is used to list protoc version
-func (b *BasicPluginManager) ListGoogleAPIsVersions(ctx context.Context) ([]string, error) {
+// ListGitRepoVersions is used to list protoc version
+func (b *BasicPluginManager) ListGitRepoVersions(ctx context.Context, uri string) ([]string, error) {
 	ctx, cancel := context.WithTimeout(ctx, defaultExecuteTimeout)
 	defer cancel()
 
 	b.versionsLock.RLock()
-	versions, ok := b.versions["googleapis"]
+	versions, ok := b.versions[uri]
 	b.versionsLock.RUnlock()
 	if ok {
 		return versions, nil
 	}
-	versions, err := ListGitCommitIds(ctx, b.Logger, consts.GoogleAPIsRepository)
+	versions, err := ListGitCommitIds(ctx, b.Logger, uri)
 	if err != nil {
 		return nil, err
 	}
 	b.versionsLock.Lock()
-	b.versions["googleapis"] = versions
+	b.versions[uri] = versions
 	b.versionsLock.Unlock()
 	return versions, nil
 }
 
-// IsGoogleAPIsInstalled is used to check whether the protoc is installed
-func (b *BasicPluginManager) IsGoogleAPIsInstalled(ctx context.Context, commitId string) (bool, string, error) {
-	local := PathForGoogleAPIs(b.storageDir, commitId)
-	exists, err := util.IsDirExists(local)
-	return exists, local, err
+// IsGitRepoInstalled is used to check whether the protoc is installed
+func (b *BasicPluginManager) IsGitRepoInstalled(ctx context.Context, uri string, commitId string) (bool, string, error) {
+	codePath, err := PathForGitReposCode(b.storageDir, uri, commitId)
+	if err != nil {
+		return false, "", err
+	}
+	exists, err := util.IsDirExists(codePath)
+	return exists, PathForGitRepos(b.storageDir, commitId), err
 }
 
-// GoogleAPIsPath returns the googleapis path
-func (b *BasicPluginManager) GoogleAPIsPath(ctx context.Context, commitId string) string {
-	return PathForGoogleAPIs(b.storageDir, commitId)
+// GitRepoPath returns the googleapis path
+func (b *BasicPluginManager) GitRepoPath(ctx context.Context, commitId string) string {
+	return PathForGitRepos(b.storageDir, commitId)
 }
 
 // IsProtocInstalled is used to check whether the protoc is installed

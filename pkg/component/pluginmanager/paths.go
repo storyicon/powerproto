@@ -15,6 +15,7 @@
 package pluginmanager
 
 import (
+	"net/url"
 	"path"
 	"path/filepath"
 
@@ -46,9 +47,19 @@ func GetPluginPath(path string, version string) (string, error) {
 	return filepath.Join(enc + "@" + encVer), nil
 }
 
-// PathForGoogleAPIs is used to get the google apis path
-func PathForGoogleAPIs(storageDir string, commitId string) string {
-	return filepath.Join(storageDir, "googleapis", commitId)
+// PathForGitReposCode returns the code path for git repos
+func PathForGitReposCode(storageDir string, uri string, commitId string) (string, error) {
+	parsed, err := url.Parse(uri)
+	if err != nil {
+		return "", err
+	}
+	dir := parsed.Host + parsed.Path
+	return filepath.Join(PathForGitRepos(storageDir, commitId), dir), nil
+}
+
+// PathForGitRepos is used to get the git repo local path
+func PathForGitRepos(storageDir string, commitId string) string {
+	return filepath.Join(storageDir, "gits", commitId)
 }
 
 // PathForPluginDir is used to get the local directory where the specified version plug-in should be stored

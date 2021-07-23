@@ -29,10 +29,10 @@ import (
 // Config defines the config model
 type Config struct {
 	Scopes        []string          `json:"scopes" yaml:"scopes"`
-	GoogleAPIs    string            `json:"googleapis" yaml:"googleapis"`
 	Protoc        string            `json:"protoc" yaml:"protoc"`
 	ProtocWorkDir string            `json:"protocWorkDir" yaml:"protocWorkDir"`
 	Plugins       map[string]string `json:"plugins" yaml:"plugins"`
+	Repositories  map[string]string `json:"repositories" yaml:"repositories"`
 	Options       []string          `json:"options" yaml:"options"`
 	ImportPaths   []string          `json:"importPaths" yaml:"importPaths"`
 	PostActions   []*PostAction     `json:"postActions" yaml:"postActions"`

@@ -44,7 +44,7 @@ PowerProto主要用于解决下面三个问题：
 5. 支持批量、递归编译proto文件，提高效率。
 6. 跨平台支持PostAction，可以在编译完成之后执行一些常规操作（比如替换掉所有生成文件中的"omitempty"）。
 7. 支持PostShell，在编译完成之后执行特定的shell脚本。
-8. 支持 google api 的一键安装与版本控制。
+8. 支持 google api, gogo protobuf 等的一键安装与版本控制。
 
 ## 安装与依赖
 
@@ -171,6 +171,8 @@ protocWorkDir: ""
 plugins:
     protoc-gen-go: google.golang.org/protobuf/cmd/protoc-gen-go@latest
     protoc-gen-go-grpc: google.golang.org/grpc/cmd/protoc-gen-go-grpc@latest
+repositories:
+    GOOGLE_APIS: https://github.com/googleapis/googleapis@75e9812478607db997376ccea247dd6928f70f45
 options:
     - --go_out=.
     - --go_opt=paths=source_relative
@@ -180,6 +182,7 @@ importPaths:
     - .
     - $GOPATH
     - $POWERPROTO_INCLUDE
+    - $GOOGLE_APIS/github.com/googleapis/googleapis
 postActions: []
 postShell: ""
 ```
@@ -214,6 +217,7 @@ $POWERPROTO_HOME/protoc/3.17.3/protoc --go_out=. \
 --proto_path=/mnt/data/hello \
 --proto_path=$GOPATH \
 --proto_path=$POWERPROTO_HOME/include \
+--proto_path=$POWERPROTO_HOME/gits/75e9812478607db997376ccea247dd6928f70f45/github.com/googleapis/googleapis \
 --plugin=protoc-gen-go=$POWERPROTO_HOME/plugins/google.golang.org/protobuf/cmd/protoc-gen-go@v1.27.1/protoc-gen-go \
 --plugin=protoc-gen-go-grpc=$POWERPROTO_HOME/plugins/google.golang.org/grpc/cmd/protoc-gen-go-grpc@v1.1.0/protoc-gen-go-grpc
 /mnt/data/hello/apis/hello.proto
@@ -239,9 +243,17 @@ protoc: 3.17.3
 # 选填，执行protoc命令的工作目录，默认是配置文件所在目录
 # 支持路径中混用环境变量，比如$GOPATH
 protocWorkDir: ""
-# 选填，如果需要使用 googleapis，你应该在这里填写googleapis的commit id
-# 可以填 latest，会自动转换成最新的版本
-googleapis: 75e9812478607db997376ccea247dd6928f70f45
+# 选填，定义依赖的Git存储库
+# 一般用于公共的protobuf库的依赖控制
+repositories:
+    # 定义依赖 27156597fdf4fb77004434d4409154a230dc9a32 版本的 https://github.com/googleapis/googleapis
+    # 并且定义其名字为 GOOGLE_APIS
+    # 在 importPaths 中可以通过 $GOOGLE_APIS 来引用它
+    GOOGLE_APIS: https://github.com/googleapis/googleapis@27156597fdf4fb77004434d4409154a230dc9a32
+    # 定义依赖 226206f39bd7276e88ec684ea0028c18ec2c91ae 版本的 https://github.com/gogo/protobuf
+    # 并且定义其名字为 GOGO_PROTOBUF
+    # 在 importPaths 中可以通过 $GOGO_PROTOBUF 来引用它
+    GOGO_PROTOBUF: https://github.com/gogo/protobuf@226206f39bd7276e88ec684ea0028c18ec2c91ae
 # 必填，代表scope匹配的目录中的proto文件，在编译时需要用到哪些插件
 plugins:
     # 插件的名字、路径以及版本号。
@@ -268,8 +280,10 @@ importPaths:
     # 特殊变量。引用待编译的proto文件所在的目录
     # 比如将要编译 /a/b/data.proto，那么 /a/b 目录将会被自动引用
     - $SOURCE_RELATIVE
-    # 特殊变量。引用googleapis字段所指定的版本的google apis
-    - $POWERPROTO_GOOGLEAPIS
+    # 引用 repositories 中的 GOOGLE_APIS
+    - $GOOGLE_APIS/github.com/googleapis/googleapis
+    # 引用 repositories 中的 GOGO_PROTOBUF
+    - $GOGO_PROTOBUF
 # 选填，构建完成之后执行的操作，工作目录是配置文件所在目录
 # postActions是跨平台兼容的
 # 注意，必须在 powerproto build 时附加 -p 参数，才会执行配置文件中的postActions
@@ -299,10 +313,11 @@ scopes:
     - ./apis1
 protoc: v3.17.3
 protocWorkDir: ""
-googleapis: 75e9812478607db997376ccea247dd6928f70f45
 plugins:
     protoc-gen-go: google.golang.org/protobuf/cmd/protoc-gen-go@v1.25.0
     protoc-gen-go-grpc: google.golang.org/grpc/cmd/protoc-gen-go-grpc@v1.1.0
+repositories:
+    GOOGLE_APIS: https://github.com/googleapis/googleapis@75e9812478607db997376ccea247dd6928f70f45
 options:
     - --go_out=.
     - --go_opt=paths=source_relative
@@ -312,6 +327,7 @@ importPaths:
     - .
     - $GOPATH
     - $POWERPROTO_INCLUDE
+    - $GOOGLE_APIS/github.com/googleapis/googleapis
 postActions: []
 postShell: ""
 
@@ -321,10 +337,11 @@ scopes:
     - ./apis2
 protoc: v3.17.3
 protocWorkDir: ""
-googleapis: 75e9812478607db997376ccea247dd6928f70f45
 plugins:
     protoc-gen-go: google.golang.org/protobuf/cmd/protoc-gen-go@v1.27.0
     protoc-gen-go-grpc: google.golang.org/grpc/cmd/protoc-gen-go-grpc@v1.1.0
+repositories:
+    GOOGLE_APIS: https://github.com/googleapis/googleapis@75e9812478607db997376ccea247dd6928f70f45
 options:
     - --go_out=.
     - --go_opt=paths=source_relative
@@ -334,6 +351,7 @@ importPaths:
     - .
     - $GOPATH
     - $POWERPROTO_INCLUDE
+    - $GOOGLE_APIS/github.com/googleapis/googleapis
 postActions: []
 postShell: ""
 ```

@@ -44,7 +44,7 @@ PowerProto is used to solve the following three main problems:
 5. support batch and recursive compilation of proto files to improve efficiency.
 6. cross-platform support PostAction, you can perform some routine operations (such as replacing "omitempty" in all generated files) after the compilation.
 7. support PostShell, execute specific shell scripts after the compilation.
-8. one-click installation and version control of google apis。
+8. one-click installation and version control of google apis and gogo protobuf etc。
 
 ## Installation and Dependencies
 
@@ -179,6 +179,8 @@ protocWorkDir: ""
 plugins:
     protoc-gen-go: google.golang.org/protobuf/cmd/protoc-gen-go@latest
     protoc-gen-go-grpc: google.golang.org/grpc/cmd/protoc-gen-go-grpc@latest
+repositories:
+    GOOGLE_APIS: https://github.com/googleapis/googleapis@75e9812478607db997376ccea247dd6928f70f45
 options:
     - --go_out=.
     - --go_opt=paths=source_relative
@@ -188,6 +190,7 @@ importPaths:
     - .
     - $GOPATH
     - $POWERPROTO_INCLUDE
+    - $GOOGLE_APIS/github.com/googleapis/googleapis
 postActions: []
 postShell: ""
 ```
@@ -222,6 +225,7 @@ $POWERPROTO_HOME/protoc/3.17.3/protoc --go_out=. \
 --proto_path=/mnt/data/hello \
 --proto_path=$GOPATH \
 --proto_path=$POWERPROTO_HOME/include \
+--proto_path=$POWERPROTO_HOME/gits/75e9812478607db997376ccea247dd6928f70f45/github.com/googleapis/googleapis \
 --plugin=protoc-gen-go=$POWERPROTO_HOME/plugins/google.golang.org/protobuf/cmd/protoc-gen-go@v1.27.1/protoc-gen-go \
 --plugin=protoc-gen-go-grpc=$POWERPROTO_HOME/plugins/google.golang.org/grpc/cmd/protoc-gen-go-grpc@v1.1.0/protoc-gen-go-grpc \
 /mnt/data/hello/apis/hello.proto
@@ -249,9 +253,17 @@ protoc: 3.17.3
 # the default is the directory where the config file is located.
 # support mixed environment variables in path, such as $GOPATH
 protocWorkDir: ""
-# optional. If you need to use googleapis, you should fill in the commit id of googleapis here.
-# You can fill in the latest, it will be automatically converted to the latest version.
-googleapis: 75e9812478607db997376ccea247dd6928f70f45
+# optional. define dependent Git repositories
+# Generally used for dependency control of public protobuf libraries
+repositories:
+    # Definition depends on the 27156597fdf4fb77004434d4409154a230dc9a32 version of https://github.com/googleapis/googleapis
+    # and defines its name as GOOGLE_APIS
+    # It can be referenced in importPaths by $GOOGLE_APIS
+    GOOGLE_APIS: https://github.com/googleapis/googleapis@27156597fdf4fb77004434d4409154a230dc9a32
+    # Definition depends on the 226206f39bd7276e88ec684ea0028c18ec2c91ae version of https://github.com/gogo/protobuf
+    # and defines its name as GOGO_PROTOBUF
+    # It can be referenced in the importPaths by $GOGO_PROTOBUF
+    GOGO_PROTOBUF: https://github.com/gogo/protobuf@226206f39bd7276e88ec684ea0028c18ec2c91ae
 # required. it is used to describe which plug-ins are required for compilation
 plugins:
     # the name, path, and version number of the plugin.
@@ -280,8 +292,10 @@ importPaths:
     # Special variables. Reference to the directory where the proto file to be compiled is located
     # For example, if /a/b/data.proto is to be compiled, then the /a/b directory will be automatically referenced
     - $SOURCE_RELATIVE
-    # Special variables. Will be replaced with the local path to the version of google apis specified by the googleapis field
-    - $POWERPROTO_GOOGLEAPIS
+    # References GOOGLE_APIS as defined in repositories
+    - $GOOGLE_APIS/github.com/googleapis/googleapis
+    # References GOGO_PROTOBUF as defined in repositories
+    - $GOGO_PROTOBUF
 # optional. The operation is executed after compilation.
 # its working directory is the directory where the config file is located.
 # postActions is cross-platform compatible.
@@ -312,10 +326,11 @@ scopes:
     - ./apis1
 protoc: v3.17.3
 protocWorkDir: ""
-googleapis: 75e9812478607db997376ccea247dd6928f70f45
 plugins:
     protoc-gen-go: google.golang.org/protobuf/cmd/protoc-gen-go@v1.25.0
     protoc-gen-go-grpc: google.golang.org/grpc/cmd/protoc-gen-go-grpc@v1.1.0
+repositories:
+    GOOGLE_APIS: https://github.com/googleapis/googleapis@75e9812478607db997376ccea247dd6928f70f45
 options:
     - --go_out=.
     - --go_opt=paths=source_relative
@@ -325,6 +340,7 @@ importPaths:
     - .
     - $GOPATH
     - $POWERPROTO_INCLUDE
+    - $GOOGLE_APIS/github.com/googleapis/googleapis
 postActions: []
 postShell: ""
 
@@ -334,10 +350,11 @@ scopes:
     - ./apis2
 protoc: v3.17.3
 protocWorkDir: ""
-googleapis: 75e9812478607db997376ccea247dd6928f70f45
 plugins:
     protoc-gen-go: google.golang.org/protobuf/cmd/protoc-gen-go@v1.27.0
     protoc-gen-go-grpc: google.golang.org/grpc/cmd/protoc-gen-go-grpc@v1.1.0
+repositories:
+    GOOGLE_APIS: https://github.com/googleapis/googleapis@75e9812478607db997376ccea247dd6928f70f45
 options:
     - --go_out=.
     - --go_opt=paths=source_relative
@@ -347,11 +364,10 @@ importPaths:
     - .
     - $GOPATH
     - $POWERPROTO_INCLUDE
+    - $GOOGLE_APIS/github.com/googleapis/googleapis
 postActions: []
 postShell: ""
 ```
-
-
 
 ### PostAction
 

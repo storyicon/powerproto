@@ -26,11 +26,11 @@ import (
 // defines a set of const value
 const (
 	// ConfigFileName defines the config file name
-	ConfigFileName = "powerproto.yaml"
+	ConfigFileName            = "powerproto.yaml"
+	// KeyNamePowerProtocInclude is the key name of powerproto default include
+	KeyNamePowerProtocInclude = "POWERPROTO_INCLUDE"
 	// The default include can be referenced by this key in import paths
-	KeyPowerProtoInclude = "$POWERPROTO_INCLUDE"
-	// The googleapis can be referenced by this key in import paths
-	KeyPowerProtoGoogleAPIs = "$POWERPROTO_GOOGLEAPIS"
+	KeyPowerProtoInclude = "$" + KeyNamePowerProtocInclude
 	// KeySourceRelative can be specified in import paths to refer to
 	// the folder where the current proto file is located
 	KeySourceRelative = "$SOURCE_RELATIVE"

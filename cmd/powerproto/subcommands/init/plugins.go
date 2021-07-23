@@ -20,40 +20,64 @@ import (
 
 // Plugin defines the plugin options
 type Plugin struct {
+	OptionsValue string
+
 	Name    string
 	Pkg     string
 	Options []string
 }
 
-// String implements the standard string interface
-func (options *Plugin) String() string {
-	return fmt.Sprintf("%s: %s", options.Name, options.Pkg)
+// GetOptionsValue is used to get options value of plugin
+func (plugin *Plugin) GetOptionsValue() string {
+	if plugin.OptionsValue != "" {
+		return plugin.OptionsValue
+	}
+	return fmt.Sprintf("%s: %s", plugin.Name, plugin.Pkg)
+}
+
+// GetPluginProtocGenGo is used to get protoc-gen-go plugin
+func GetPluginProtocGenGo() *Plugin {
+	return &Plugin{
+		Name: "protoc-gen-go",
+		Pkg:  "google.golang.org/protobuf/cmd/protoc-gen-go@latest",
+		Options: []string{
+			"--go_out=.",
+			"--go_opt=paths=source_relative",
+		},
+	}
+}
+
+// GetPluginProtocGenGoGRPC is used to get protoc-gen-go-grpc plugin
+func GetPluginProtocGenGoGRPC() *Plugin {
+	return &Plugin{
+		Name: "protoc-gen-go-grpc",
+		Pkg:  "google.golang.org/grpc/cmd/protoc-gen-go-grpc@latest",
+		Options: []string{
+			"--go-grpc_out=.",
+			"--go-grpc_opt=paths=source_relative",
+		},
+	}
 }
 
 // GetWellKnownPlugins is used to get well known plugins
 func GetWellKnownPlugins() []*Plugin {
 	return []*Plugin{
-		{
-			Name: "protoc-gen-go",
-			Pkg:  "google.golang.org/protobuf/cmd/protoc-gen-go@latest",
-			Options: []string{
-				"--go_out=.",
-				"--go_opt=paths=source_relative",
-			},
-		},
-		{
-			Name: "protoc-gen-go-grpc",
-			Pkg:  "google.golang.org/grpc/cmd/protoc-gen-go-grpc@latest",
-			Options: []string{
-				"--go-grpc_out=.",
-				"--go-grpc_opt=paths=source_relative",
-			},
-		},
+		GetPluginProtocGenGo(),
+		GetPluginProtocGenGoGRPC(),
 		{
 			Name: "protoc-gen-grpc-gateway",
 			Pkg:  "github.com/grpc-ecosystem/grpc-gateway/v2/protoc-gen-grpc-gateway@latest",
 			Options: []string{
 				"--grpc-gateway_out=.",
+			},
+		},
+		{
+			OptionsValue: "protoc-gen-go-grpc (SupportPackageIsVersion6)",
+			Name:         "protoc-gen-go-grpc",
+			Pkg:          "google.golang.org/grpc/cmd/protoc-gen-go-grpc@ad51f572fd270f2323e3aa2c1d2775cab9087af2",
+			Options: []string{
+				"--go-grpc_out=.",
+				"--go-grpc_opt=paths=source_relative",
 			},
 		},
 		{
@@ -98,7 +122,7 @@ func GetWellKnownPlugins() []*Plugin {
 func GetPluginFromOptionsValue(val string) (*Plugin, bool) {
 	plugins := GetWellKnownPlugins()
 	for _, plugin := range plugins {
-		if plugin.String() == val {
+		if plugin.GetOptionsValue() == val {
 			return plugin, true
 		}
 	}
@@ -110,7 +134,7 @@ func GetWellKnownPluginsOptionValues() []string {
 	plugins := GetWellKnownPlugins()
 	packages := make([]string, 0, len(plugins))
 	for _, plugin := range plugins {
-		packages = append(packages, plugin.String())
+		packages = append(packages, plugin.GetOptionsValue())
 	}
 	return packages
 }

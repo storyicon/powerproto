@@ -24,6 +24,19 @@ import (
 	"syscall"
 )
 
+// DeduplicateSlice is used to deduplicate slice items stably
+func DeduplicateSliceStably(items []string) []string {
+	data := make([]string, 0, len(items))
+	deduplicate := map[string]struct{}{}
+	for _, val := range items {
+		if _, exists := deduplicate[val]; !exists {
+			deduplicate[val] = struct{}{}
+			data = append(data, val)
+		}
+	}
+	return data
+}
+
 // ContainsEmpty is used to check whether items contains empty string
 func ContainsEmpty(items ...string) bool {
 	return Contains(items, "")
@@ -75,10 +88,17 @@ func GetExitCode(err error) int {
 var regexpEnvironmentVar = regexp.MustCompile(`\$[A-Za-z_]+`)
 
 // RenderPathWithEnv is used to render path with environment
-func RenderPathWithEnv(path string) string {
+func RenderPathWithEnv(path string, ext map[string]string) string {
 	matches := regexpEnvironmentVar.FindAllString(path, -1)
 	for _, match := range matches {
-		path = strings.ReplaceAll(path, match, os.Getenv(match[1:]))
+		key := match[1:]
+		val := ext[key]
+		if val == "" {
+			val = os.Getenv(key)
+		}
+		if val != "" {
+			path = strings.ReplaceAll(path, match, val)
+		}
 	}
 	return filepath.Clean(path)
 }

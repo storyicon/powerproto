@@ -70,20 +70,20 @@ var _ = Describe("Pluginmanager", func() {
 		Expect(exists).To(BeTrue())
 		Expect(len(local) != 0).To(BeTrue())
 	})
-	It("should able to install googleapis", func() {
-		versions, err := manager.ListGoogleAPIsVersions(context.TODO())
+	It("should able to install git repos", func() {
+		const uri = "https://github.com/gogo/protobuf"
+		versions, err := manager.ListGitRepoVersions(context.TODO(), uri)
 		Expect(err).To(BeNil())
 		Expect(len(versions) > 0).To(BeTrue())
-
-		latestVersion, err := manager.GetGoogleAPIsLatestVersion(context.TODO())
+		latestVersion, err := manager.GetGitRepoLatestVersion(context.TODO(), uri)
 		Expect(err).To(BeNil())
 		Expect(latestVersion).To(Equal(versions[len(versions)-1]))
 
-		local, err := manager.InstallGoogleAPIs(context.TODO(), latestVersion)
+		local, err := manager.InstallGitRepo(context.TODO(), uri, latestVersion)
 		Expect(err).To(BeNil())
 		Expect(len(local) > 0).To(BeTrue())
 
-		exists, local, err := manager.IsGoogleAPIsInstalled(context.TODO(), latestVersion)
+		exists, local, err := manager.IsGitRepoInstalled(context.TODO(), uri, latestVersion)
 		Expect(err).To(BeNil())
 		Expect(exists).To(BeTrue())
 		Expect(len(local) != 0).To(BeTrue())

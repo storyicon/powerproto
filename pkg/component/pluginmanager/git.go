@@ -16,7 +16,14 @@ package pluginmanager
 
 import (
 	"context"
+	"fmt"
+	"net/http"
+	"os"
+	"path"
+	"path/filepath"
 	"strings"
+
+	"github.com/mholt/archiver"
 
 	"github.com/storyicon/powerproto/pkg/util/command"
 	"github.com/storyicon/powerproto/pkg/util/logger"
@@ -88,4 +95,63 @@ func ListGitTags(ctx context.Context, log logger.Logger, repo string) ([]string,
 		}
 	}
 	return tags, nil
+}
+
+// GithubArchive is github archive
+type GithubArchive struct {
+	uri       string
+	commit    string
+	workspace string
+}
+
+// GetGithubArchive is used to download github archive
+func GetGithubArchive(ctx context.Context, uri string, commitId string) (*GithubArchive, error) {
+	filename := fmt.Sprintf("%s.zip", commitId)
+	addr := fmt.Sprintf("%s/archive/%s", uri, filename)
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, addr, nil)
+	if err != nil {
+		return nil, &ErrHTTPDownload{
+			Url: addr,
+			Err: err,
+		}
+	}
+	workspace, err := os.MkdirTemp("", "")
+	if err != nil {
+		return nil, err
+	}
+	resp, err := http.DefaultClient.Do(req)
+	if err != nil {
+		return nil, &ErrHTTPDownload{
+			Url: addr,
+			Err: err,
+		}
+	}
+	zipFilePath := filepath.Join(workspace, filename)
+	if err := downloadFile(resp, zipFilePath); err != nil {
+		return nil, &ErrHTTPDownload{
+			Url:  addr,
+			Err:  err,
+			Code: resp.StatusCode,
+		}
+	}
+	zip := archiver.NewZip()
+	if err := zip.Unarchive(zipFilePath, workspace); err != nil {
+		return nil, err
+	}
+	return &GithubArchive{
+		uri:       uri,
+		commit:    commitId,
+		workspace: workspace,
+	}, nil
+}
+
+// GetLocalDir is used to get local dir of archive
+func (c *GithubArchive) GetLocalDir() string {
+	dir := path.Base(c.uri) + "-" + c.commit
+	return filepath.Join(c.workspace, dir)
+}
+
+// Clear is used to clear the workspace
+func (c *GithubArchive) Clear() error {
+	return os.RemoveAll(c.workspace)
 }

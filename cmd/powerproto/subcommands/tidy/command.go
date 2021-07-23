@@ -48,7 +48,7 @@ func tidy(ctx context.Context,
 	if err := bootstraps.StepInstallProtoc(ctx, pluginManager, configItems); err != nil {
 		return err
 	}
-	if err := bootstraps.StepInstallGoogleAPIs(ctx, pluginManager, configItems); err != nil {
+	if err := bootstraps.StepInstallRepositories(ctx, pluginManager, configItems); err != nil {
 		return err
 	}
 	if err := bootstraps.StepInstallPlugins(ctx, pluginManager, configItems); err != nil {

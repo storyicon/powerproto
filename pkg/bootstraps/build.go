@@ -67,54 +67,61 @@ func StepLookUpConfigs(
 	return configItems, nil
 }
 
-// StepInstallGoogleAPIs is used to install google apis
-func StepInstallGoogleAPIs(ctx context.Context,
+// StepInstallRepositories is used to install repositories
+func StepInstallRepositories(ctx context.Context,
 	pluginManager pluginmanager.PluginManager,
 	configItems []configs.ConfigItem) error {
 	deduplicate := map[string]struct{}{}
 	for _, config := range configItems {
-		version := config.Config().GoogleAPIs
-		if version != "" {
-			deduplicate[version] = struct{}{}
+		for _, pkg := range config.Config().Repositories {
+			deduplicate[pkg] = struct{}{}
 		}
 	}
 	if len(deduplicate) == 0 {
 		return nil
 	}
-
 	progress := progressbar.GetProgressBar(ctx, len(deduplicate))
-	progress.SetPrefix("Install googleapis")
+	progress.SetPrefix("Install repositories")
 
-	versionsMap := map[string]struct{}{}
-	for version := range deduplicate {
+	repoMap := map[string]struct{}{}
+	for pkg := range deduplicate {
+		path, version, ok := util.SplitGoPackageVersion(pkg)
+		if !ok {
+			return errors.Errorf("invalid format: %s, should in path@version format", pkg)
+		}
 		if version == "latest" {
-			progress.SetSuffix("query latest version of googleapis")
-			latestVersion, err := pluginManager.GetGoogleAPIsLatestVersion(ctx)
+			progress.SetSuffix("query latest version of %s", path)
+			latestVersion, err := pluginManager.GetGitRepoLatestVersion(ctx, path)
 			if err != nil {
-				return errors.Wrap(err, "failed to list googleapis versions")
+				return errors.Wrapf(err, "failed to query latest version of %s", path)
 			}
 			version = latestVersion
+			pkg = util.JoinGoPackageVersion(path, version)
 		}
-		progress.SetSuffix("check cache of googleapis %s", version)
-		exists, _, err := pluginManager.IsGoogleAPIsInstalled(ctx, version)
+		progress.SetSuffix("check cache of %s", pkg)
+		exists, _, err := pluginManager.IsGitRepoInstalled(ctx, path, version)
 		if err != nil {
 			return err
 		}
 		if exists {
-			progress.SetSuffix("the %s version of googleapis is already cached", version)
+			progress.SetSuffix("the %s version of %s is already cached", version, path)
 		} else {
-			progress.SetSuffix("install %s version of googleapis", version)
-			_, err = pluginManager.InstallGoogleAPIs(ctx, version)
+			progress.SetSuffix("install %s version of %s", version, path)
+			_, err = pluginManager.InstallGitRepo(ctx, path, version)
 			if err != nil {
 				return err
 			}
-			progress.SetSuffix("the %s version of googleapis is installed", version)
+			progress.SetSuffix("the %s version of %s is installed", version, path)
 		}
-		versionsMap[version] = struct{}{}
+		repoMap[pkg] = struct{}{}
 		progress.Incr()
 	}
+	progress.SetSuffix("all repositories have been installed")
 	progress.Wait()
-	fmt.Println("the following versions of googleapis will be used:", util.SetToSlice(versionsMap))
+	fmt.Println("the following versions of googleapis will be used:")
+	for pkg := range repoMap {
+		fmt.Printf("	%s\r\n", pkg)
+	}
 	return nil
 }
 
@@ -320,7 +327,7 @@ func Compile(ctx context.Context, targets []string) error {
 	if err := StepInstallProtoc(ctx, pluginManager, configItems); err != nil {
 		return err
 	}
-	if err := StepInstallGoogleAPIs(ctx, pluginManager, configItems); err != nil {
+	if err := StepInstallRepositories(ctx, pluginManager, configItems); err != nil {
 		return err
 	}
 	if err := StepInstallPlugins(ctx, pluginManager, configItems); err != nil {

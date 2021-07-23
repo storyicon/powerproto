@@ -95,6 +95,21 @@ func StepTidyConfigFile(ctx context.Context,
 			item.Protoc = version
 			cleanable = true
 		}
+		for name, pkg := range item.Repositories {
+			path, version, ok := util.SplitGoPackageVersion(pkg)
+			if !ok {
+				return errors.Errorf("invalid package format: %s, should be in path@version format", pkg)
+			}
+			if version == "latest" {
+				progress.SetSuffix("query latest version of %s", path)
+				version, err := pluginManager.GetGitRepoLatestVersion(ctx, path)
+				if err != nil {
+					return err
+				}
+				item.Repositories[name] = util.JoinGoPackageVersion(path, version)
+				cleanable = true
+			}
+		}
 		for name, pkg := range item.Plugins {
 			path, version, ok := util.SplitGoPackageVersion(pkg)
 			if !ok {

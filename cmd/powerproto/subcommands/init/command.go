@@ -15,6 +15,8 @@
 package build
 
 import (
+	"fmt"
+
 	"github.com/AlecAivazis/survey/v2"
 	"github.com/spf13/cobra"
 
@@ -26,7 +28,8 @@ import (
 
 // UserPreference defines the model of user preference
 type UserPreference struct {
-	Plugins []string `survey:"plugins"`
+	Plugins      []string `survey:"plugins"`
+	Repositories []string `survey:"repositories"`
 }
 
 // GetUserPreference is used to get user preference
@@ -40,7 +43,25 @@ func GetUserPreference() (*UserPreference, error) {
 				Options: GetWellKnownPluginsOptionValues(),
 			},
 		},
+		{
+			Name: "repositories",
+			Prompt: &survey.MultiSelect{
+				Message: "select repositories to use. Later, you can also manually add in the configuration file",
+				Options: GetWellKnownRepositoriesOptionValues(),
+			},
+		},
 	}, &preference)
+	if len(preference.Plugins) == 0 {
+		preference.Plugins = []string{
+			GetPluginProtocGenGo().GetOptionsValue(),
+			GetPluginProtocGenGoGRPC().GetOptionsValue(),
+		}
+	}
+	if len(preference.Repositories) == 0 {
+		preference.Repositories = []string{
+			GetRepositoryGoogleAPIs().GetOptionsValue(),
+		}
+	}
 	return &preference, err
 }
 
@@ -50,23 +71,14 @@ func GetDefaultConfig() *configs.Config {
 		Scopes: []string{
 			"./",
 		},
-		Protoc:     "latest",
-		GoogleAPIs: "75e9812478607db997376ccea247dd6928f70f45",
-		Plugins: map[string]string{
-			"protoc-gen-go":      "google.golang.org/protobuf/cmd/protoc-gen-go@latest",
-			"protoc-gen-go-grpc": "google.golang.org/grpc/cmd/protoc-gen-go-grpc@latest",
-		},
-		Options: []string{
-			"--go_out=.",
-			"--go_opt=paths=source_relative",
-			"--go-grpc_out=.",
-			"--go-grpc_opt=paths=source_relative",
-		},
+		Protoc:       "latest",
+		Plugins:      map[string]string{},
+		Repositories: map[string]string{},
+		Options:      []string{},
 		ImportPaths: []string{
 			".",
 			"$GOPATH",
 			consts.KeyPowerProtoInclude,
-			consts.KeyPowerProtoGoogleAPIs,
 			consts.KeySourceRelative,
 		},
 	}
@@ -95,18 +107,18 @@ func CommandInit(log logger.Logger) *cobra.Command {
 				return
 			}
 			config := GetDefaultConfig()
-			if len(preference.Plugins) != 0 {
-				var compileOptions []string
-				plugins := map[string]string{}
-				for _, val := range preference.Plugins {
-					plugin, ok := GetPluginFromOptionsValue(val)
-					if ok {
-						plugins[plugin.Name] = plugin.Pkg
-						compileOptions = append(compileOptions, plugin.Options...)
-					}
+			for _, val := range preference.Plugins {
+				if plugin, ok := GetPluginFromOptionsValue(val); ok {
+					config.Plugins[plugin.Name] = plugin.Pkg
+					config.Options = append(config.Options, plugin.Options...)
 				}
-				config.Plugins = plugins
-				config.Options = compileOptions
+			}
+			fmt.Println(">>>>>>>>>>>>>>", preference.Repositories)
+			for _, val := range preference.Repositories {
+				if repo, ok := GetRepositoryFromOptionsValue(val); ok {
+					config.Repositories[repo.Name] = repo.Pkg
+					config.ImportPaths = append(config.ImportPaths, repo.ImportPaths...)
+				}
 			}
 			if err := configs.SaveConfigs(consts.ConfigFileName, config); err != nil {
 				log.LogFatal(nil, "failed to save config: %s", err)
