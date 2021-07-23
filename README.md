@@ -1,8 +1,7 @@
-```
 ❤️ PowerProto is actively maintained! Any questions in use can be directly raised issue, I will respond to you as fast as possible.
 If you think the project is helpful to you, please give me a star to encourage me!
-```
 
+---
 
 # PowerProto
 
