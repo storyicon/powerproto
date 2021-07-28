@@ -223,7 +223,7 @@ $POWERPROTO_HOME/protoc/3.17.3/protoc --go_out=. \
 /mnt/data/hello/apis/hello.proto
 ```
 
-更多的例子可以参考 `https://github.com/storyicon/powerproto/tree/master/examples`.
+更多的例子可以参考 [示例](https://github.com/storyicon/powerproto/tree/master/examples).
 
 
 ## 配置文件

@@ -5,8 +5,8 @@ This example uses the following public libraries:
 * [gogoproto](https://github.com/gogo/protobuf/tree/master/gogoproto)
 
 The following plug-ins are used:
-* [protoc-gen-gofast](github.com/gogo/protobuf/protoc-gen-gofast)
-* [protoc-gen-grpc-gateway](github.com/grpc-ecosystem/grpc-gateway)
+* [protoc-gen-gofast](https://github.com/gogo/protobuf/protoc-gen-gofast)
+* [protoc-gen-grpc-gateway](https://github.com/grpc-ecosystem/grpc-gateway)
 
 You can compile the proto file in this directory by executing the following command:
 ```

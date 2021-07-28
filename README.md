@@ -235,7 +235,7 @@ $POWERPROTO_HOME/protoc/3.17.3/protoc --go_out=. \
 /mnt/data/hello/apis/hello.proto
 ```
 
-More examples can be found in `https://github.com/storyicon/powerproto/tree/master/examples`.
+More examples can be found in [examples](https://github.com/storyicon/powerproto/tree/master/examples).
 
 
 ## Config File
