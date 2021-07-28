@@ -1,0 +1,24 @@
+scopes:
+    - ./
+protoc: v3.17.3
+protocWorkDir: ""
+plugins:
+    protoc-gen-gofast: github.com/gogo/protobuf/protoc-gen-gofast@v1.3.2
+    protoc-gen-grpc-gateway: github.com/grpc-ecosystem/grpc-gateway/v2/protoc-gen-grpc-gateway@v2.5.0
+repositories:
+    GOGO_PROTOBUF: https://github.com/gogo/protobuf@226206f39bd7276e88ec684ea0028c18ec2c91ae
+    GOOGLE_APIS: https://github.com/googleapis/googleapis@75e9812478607db997376ccea247dd6928f70f45
+options:
+    - --grpc-gateway_out=.
+    - --grpc-gateway_opt=paths=source_relative
+    - --gofast_out=plugins=grpc:.
+    - --gofast_opt=paths=source_relative
+importPaths:
+    - .
+    - $GOPATH
+    - $POWERPROTO_INCLUDE
+    - $SOURCE_RELATIVE
+    - $GOOGLE_APIS/github.com/googleapis/googleapis
+    - $GOGO_PROTOBUF
+postActions: []
+postShell: ""

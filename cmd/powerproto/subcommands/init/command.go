@@ -15,8 +15,6 @@
 package build
 
 import (
-	"fmt"
-
 	"github.com/AlecAivazis/survey/v2"
 	"github.com/spf13/cobra"
 
@@ -113,7 +111,6 @@ func CommandInit(log logger.Logger) *cobra.Command {
 					config.Options = append(config.Options, plugin.Options...)
 				}
 			}
-			fmt.Println(">>>>>>>>>>>>>>", preference.Repositories)
 			for _, val := range preference.Repositories {
 				if repo, ok := GetRepositoryFromOptionsValue(val); ok {
 					config.Repositories[repo.Name] = repo.Pkg

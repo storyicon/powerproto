@@ -1,0 +1,28 @@
+syntax = "proto3";
+
+package powerproto.examples.using_googleapis;
+option go_package = "github.com/storyicon/powerproto/examples/using_googleapis/apis;apis";
+
+import "google/api/annotations.proto";
+
+service Mocker {
+    rpc Echo (EchoRequest) returns (EchoResponse) {
+        option (google.api.http) = {
+            post: "/echo"
+            body: "*"
+        };
+    };
+}
+
+message EchoRequest {
+    string message = 1;
+    int64 timestamp = 2;
+    uint32 code = 3;
+    uint32 delay = 4;
+}
+
+message EchoResponse {
+    string message = 1;
+    int64 timestamp = 2;
+    string server = 3;
+}

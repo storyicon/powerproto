@@ -20,9 +20,7 @@ require (
 	github.com/pierrec/lz4 v2.6.1+incompatible // indirect
 	github.com/pkg/errors v0.9.1
 	github.com/prometheus/client_golang v1.11.0
-	github.com/rs/zerolog v1.23.0
 	github.com/spf13/cobra v1.2.1
-	github.com/spf13/pflag v1.0.5
 	github.com/ulikunitz/xz v0.5.10 // indirect
 	github.com/vbauerster/mpb/v7 v7.0.3
 	github.com/xi2/xz v0.0.0-20171230120015-48954b6210f8 // indirect

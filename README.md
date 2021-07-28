@@ -160,6 +160,7 @@ powerproto env
 
 ## Examples
 
+
 For example, you have the following file structure in the `/mnt/data/hello` directory:
 
 ```
@@ -233,6 +234,9 @@ $POWERPROTO_HOME/protoc/3.17.3/protoc --go_out=. \
 --plugin=protoc-gen-go-grpc=$POWERPROTO_HOME/plugins/google.golang.org/grpc/cmd/protoc-gen-go-grpc@v1.1.0/protoc-gen-go-grpc \
 /mnt/data/hello/apis/hello.proto
 ```
+
+More examples can be found in `https://github.com/storyicon/powerproto/tree/master/examples`.
+
 
 ## Config File
 

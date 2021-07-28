@@ -1,0 +1,40 @@
+syntax = "proto3";
+
+import "github.com/gogo/protobuf/gogoproto/gogo.proto";
+import "google/api/annotations.proto";
+
+package powerproto.examples.using_gogo;
+option go_package = "github.com/storyicon/powerproto/examples/using_gogo/apis;apis";
+
+option java_multiple_files = true;
+option java_package = "com.powerproto.examples.using_gogo";
+option objc_class_prefix = "BAPIMetadata";
+
+option (gogoproto.goproto_enum_prefix_all) = false;
+option (gogoproto.goproto_getters_all) = false;
+option (gogoproto.unmarshaler_all) = true;
+option (gogoproto.marshaler_all) = true;
+option (gogoproto.sizer_all) = true;
+option (gogoproto.goproto_registration) = true;
+
+service Mocker {
+    rpc Echo (EchoRequest) returns (EchoResponse) {
+        option (google.api.http) = {
+            post: "/echo"
+            body: "*"
+        };
+    };
+}
+
+message EchoRequest {
+    string message = 1;
+    int64 timestamp = 2;
+    uint32 code = 3;
+    uint32 delay = 4;
+}
+
+message EchoResponse {
+    string message = 1;
+    int64 timestamp = 2;
+    string server = 3;
+}

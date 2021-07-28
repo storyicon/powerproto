@@ -223,6 +223,9 @@ $POWERPROTO_HOME/protoc/3.17.3/protoc --go_out=. \
 /mnt/data/hello/apis/hello.proto
 ```
 
+更多的例子可以参考 `https://github.com/storyicon/powerproto/tree/master/examples`.
+
+
 ## 配置文件
 
 配置文件用于描述编译proto文件时，各种依赖的版本以及参数等。

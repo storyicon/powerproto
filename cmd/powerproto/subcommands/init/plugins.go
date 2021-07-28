@@ -69,6 +69,7 @@ func GetWellKnownPlugins() []*Plugin {
 			Pkg:  "github.com/grpc-ecosystem/grpc-gateway/v2/protoc-gen-grpc-gateway@latest",
 			Options: []string{
 				"--grpc-gateway_out=.",
+				"--grpc-gateway_opt=paths=source_relative",
 			},
 		},
 		{
@@ -91,14 +92,16 @@ func GetWellKnownPlugins() []*Plugin {
 			Name: "protoc-gen-gogo",
 			Pkg:  "github.com/gogo/protobuf/protoc-gen-gogo@latest",
 			Options: []string{
-				"--gogo_out=.",
+				"--gogo_out=plugins=grpc:.",
+				"--gogo_opt=paths=source_relative",
 			},
 		},
 		{
 			Name: "protoc-gen-gofast",
 			Pkg:  "github.com/gogo/protobuf/protoc-gen-gofast@latest",
 			Options: []string{
-				"--gofast_out=.",
+				"--gofast_out=plugins=grpc:.",
+				"--gofast_opt=paths=source_relative",
 			},
 		},
 		{
