@@ -51,7 +51,7 @@ PowerProto is used to solve the following three main problems:
 
 ## Installation and Dependencies
 
-1. The current version of `PowerProto` relies on `go` and `git` (in the future it may use CDN to pull built binaries directly), please make sure the runtime environment contains these two commands.
+1. The current version of `PowerProto` relies on `go`(>=1.16) and `git` (in the future it may use CDN to pull built binaries directly), please make sure the runtime environment contains these two commands.
 2. `protoc` download source is Github, `PowerProto` respects `HTTP_PROXY`, `HTTPS_PROXY` environment variables when downloading `protoc`, if you encounter network problems, please configure your own proxy.
 3. When querying the version list of `protoc`, `git ls-remote` is used for `github.com`, if you encounter network problems, please configure the proxy for `git` by yourself.
 4. In the current version, downloading and querying plugin versions rely on the `go` command, so if you encounter network problems, please configure the `GOPROXY` environment variable yourself.

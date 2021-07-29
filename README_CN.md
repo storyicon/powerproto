@@ -48,7 +48,7 @@ PowerProto主要用于解决下面三个问题：
 
 ## 安装与依赖
 
-1. 目前版本的 `PowerProto` 依赖 `go` 以及 `git`（未来可能会直接使用CDN拉取构建好的二进制），请确保运行环境中包含这两个命令。
+1. 目前版本的 `PowerProto` 依赖 `go`(>=1.16) 以及 `git`（未来可能会直接使用CDN拉取构建好的二进制），请确保运行环境中包含这两个命令。
 2. `protoc`的下载源是Github，`PowerProto`在下载`protoc`时尊重 `HTTP_PROXY`、`HTTPS_PROXY`环境变量，如果遇到网络问题，请自行配置代理。
 3. 在查询`protoc`的版本列表时，会对`github.com`使用`git ls-remote`，如果遇到网络问题，请自行为`git`配置代理。
 4. 在当前版本，下载和查询插件版本均依赖`go`命令，所以如果遇到网络问题，请自行配置 `GOPROXY`环境变量。
