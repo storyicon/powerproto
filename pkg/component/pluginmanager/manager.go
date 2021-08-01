@@ -45,8 +45,6 @@ type PluginManager interface {
 	GetGitRepoLatestVersion(ctx context.Context, uri string) (string, error)
 	// InstallGitRepo is used to install google apis
 	InstallGitRepo(ctx context.Context, uri string, commitId string) (local string, err error)
-	// ListGitRepoVersions is used to list protoc version
-	ListGitRepoVersions(ctx context.Context, uri string) ([]string, error)
 	// IsGitRepoInstalled is used to check whether the protoc is installed
 	IsGitRepoInstalled(ctx context.Context, uri string, commitId string) (bool, string, error)
 	// GitRepoPath  returns the googleapis path
@@ -143,14 +141,7 @@ func (b *BasicPluginManager) InstallPlugin(ctx context.Context, path string, ver
 
 // GetGitRepoLatestVersion is used to get the latest version of google apis
 func (b *BasicPluginManager) GetGitRepoLatestVersion(ctx context.Context, url string) (string, error) {
-	versions, err := b.ListGitRepoVersions(ctx, url)
-	if err != nil {
-		return "", err
-	}
-	if len(versions) == 0 {
-		return "", errors.New("no version list")
-	}
-	return versions[len(versions)-1], nil
+	return GetGitLatestCommitId(ctx, b.Logger, url)
 }
 
 // InstallGitRepo is used to install google apis
@@ -178,27 +169,6 @@ func (b *BasicPluginManager) InstallGitRepo(ctx context.Context, uri string, com
 		return "", err
 	}
 	return local, nil
-}
-
-// ListGitRepoVersions is used to list protoc version
-func (b *BasicPluginManager) ListGitRepoVersions(ctx context.Context, uri string) ([]string, error) {
-	ctx, cancel := context.WithTimeout(ctx, defaultExecuteTimeout)
-	defer cancel()
-
-	b.versionsLock.RLock()
-	versions, ok := b.versions[uri]
-	b.versionsLock.RUnlock()
-	if ok {
-		return versions, nil
-	}
-	versions, err := ListGitCommitIds(ctx, b.Logger, uri)
-	if err != nil {
-		return nil, err
-	}
-	b.versionsLock.Lock()
-	b.versions[uri] = versions
-	b.versionsLock.Unlock()
-	return versions, nil
 }
 
 // IsGitRepoInstalled is used to check whether the protoc is installed

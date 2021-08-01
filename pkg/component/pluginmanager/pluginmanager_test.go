@@ -25,7 +25,7 @@ import (
 	"github.com/storyicon/powerproto/pkg/util/logger"
 )
 
-var _ = Describe("Pluginmanager", func() {
+var _ = Describe("PluginManager", func() {
 	cfg := pluginmanager.NewConfig()
 	cfg.StorageDir, _ = filepath.Abs("./tests")
 
@@ -72,12 +72,9 @@ var _ = Describe("Pluginmanager", func() {
 	})
 	It("should able to install git repos", func() {
 		const uri = "https://github.com/gogo/protobuf"
-		versions, err := manager.ListGitRepoVersions(context.TODO(), uri)
-		Expect(err).To(BeNil())
-		Expect(len(versions) > 0).To(BeTrue())
 		latestVersion, err := manager.GetGitRepoLatestVersion(context.TODO(), uri)
 		Expect(err).To(BeNil())
-		Expect(latestVersion).To(Equal(versions[len(versions)-1]))
+		Expect(len(latestVersion) > 0).To(Equal(true))
 
 		local, err := manager.InstallGitRepo(context.TODO(), uri, latestVersion)
 		Expect(err).To(BeNil())

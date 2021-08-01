@@ -85,3 +85,38 @@ func TestDeduplicateSliceStably(t *testing.T) {
 		})
 	}
 }
+
+func TestSortSemanticVersion(t *testing.T) {
+	type args struct {
+		items []string
+	}
+	tests := []struct {
+		name  string
+		args  args
+		want  []string
+		want1 []string
+	}{
+		{
+			args: args{
+				items: []string{
+					"v3.0.0-beta-3.1",
+					"v3.0.0-alpha-2",
+					"3.15.0-rc1", "conformance-build-tag", "v2.4.1",
+				},
+			},
+			want:  []string{"conformance-build-tag"},
+			want1: []string{"v2.4.1", "v3.0.0-alpha-2", "v3.0.0-beta-3.1", "3.15.0-rc1"},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got, got1 := SortSemanticVersion(tt.args.items)
+			if !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("SortSemanticVersion() got = %v, want %v", got, tt.want)
+			}
+			if !reflect.DeepEqual(got1, tt.want1) {
+				t.Errorf("SortSemanticVersion() got1 = %v, want %v", got1, tt.want1)
+			}
+		})
+	}
+}

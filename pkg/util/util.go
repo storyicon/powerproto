@@ -20,11 +20,41 @@ import (
 	"path/filepath"
 	"regexp"
 	"runtime"
+	"sort"
 	"strings"
 	"syscall"
+
+	"github.com/coreos/go-semver/semver"
 )
 
-// DeduplicateSlice is used to deduplicate slice items stably
+// SortSemanticVersion is used to sort semantic version
+func SortSemanticVersion(items []string) ([]string, []string) {
+	versionMap := make(map[*semver.Version]string, len(items))
+	versions := make(semver.Versions, 0, len(items))
+	var malformed []string
+	for _, item := range items {
+		s := item
+		if strings.HasPrefix(s, "v") {
+			s = item[1:]
+		}
+		version, err := semver.NewVersion(s)
+		if err != nil {
+			malformed = append(malformed, item)
+			continue
+		}
+		versionMap[version] = item
+		versions = append(versions, version)
+	}
+	sort.Sort(versions)
+	var data []string
+	for _, version := range versions {
+		data = append(data, versionMap[version])
+	}
+	sort.Strings(malformed)
+	return malformed, data
+}
+
+// DeduplicateSliceStably is used to deduplicate slice items stably
 func DeduplicateSliceStably(items []string) []string {
 	data := make([]string, 0, len(items))
 	deduplicate := map[string]struct{}{}

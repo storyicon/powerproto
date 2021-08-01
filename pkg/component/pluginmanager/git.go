@@ -24,6 +24,7 @@ import (
 	"strings"
 
 	"github.com/mholt/archiver"
+	"github.com/storyicon/powerproto/pkg/util"
 
 	"github.com/storyicon/powerproto/pkg/util/command"
 	"github.com/storyicon/powerproto/pkg/util/logger"
@@ -53,31 +54,10 @@ func GetGitLatestCommitId(ctx context.Context, log logger.Logger, repo string) (
 	return f[0], nil
 }
 
-// ListGitCommitIds is used to list git commit ids
-func ListGitCommitIds(ctx context.Context, log logger.Logger, repo string) ([]string, error) {
-	data, err := command.Execute(ctx, log, "", "git", []string{
-		"ls-remote", repo,
-	}, nil)
-	if err != nil {
-		return nil, &ErrGitList{
-			ErrCommandExec: err.(*command.ErrCommandExec),
-		}
-	}
-	var commitIds []string
-	for _, line := range strings.Split(string(data), "\n") {
-		f := strings.Fields(line)
-		if len(f) != 2 {
-			continue
-		}
-		commitIds = append(commitIds, f[0])
-	}
-	return commitIds, nil
-}
-
 // ListGitTags is used to list the git tags of specified repository
 func ListGitTags(ctx context.Context, log logger.Logger, repo string) ([]string, error) {
 	data, err := command.Execute(ctx, log, "", "git", []string{
-		"ls-remote", "--tags", "--refs", "--sort", "version:refname", repo,
+		"ls-remote", "--tags", "--refs", repo,
 	}, nil)
 	if err != nil {
 		return nil, &ErrGitList{
@@ -94,7 +74,8 @@ func ListGitTags(ctx context.Context, log logger.Logger, repo string) ([]string,
 			tags = append(tags, strings.TrimPrefix(f[1], "refs/tags/"))
 		}
 	}
-	return tags, nil
+	malformed, wellFormed := util.SortSemanticVersion(tags)
+	return append(malformed, wellFormed...), nil
 }
 
 // GithubArchive is github archive
