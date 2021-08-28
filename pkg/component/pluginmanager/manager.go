@@ -204,7 +204,7 @@ func (b *BasicPluginManager) IsProtocInstalled(ctx context.Context, version stri
 	return IsProtocInstalled(ctx, b.storageDir, version)
 }
 
-// GetProtocLatestVersion is used to geet the latest version of protoc
+// GetProtocLatestVersion is used to get the latest version of protoc
 func (b *BasicPluginManager) GetProtocLatestVersion(ctx context.Context) (string, error) {
 	ctx, cancel := consts.GetContextWithPerCommandTimeout(ctx)
 	defer cancel()
@@ -216,7 +216,13 @@ func (b *BasicPluginManager) GetProtocLatestVersion(ctx context.Context) (string
 	if len(versions) == 0 {
 		return "", errors.New("no version list")
 	}
-	return versions[len(versions)-1], nil
+	regularVersions := make([]string, 0, len(versions))
+	for _, version := range versions {
+		if util.IsRegularVersion(version) {
+			regularVersions = append(regularVersions, version)
+		}
+	}
+	return regularVersions[len(regularVersions)-1], nil
 }
 
 // ListProtocVersions is used to list protoc version
