@@ -266,6 +266,7 @@ plugins:
     protoc-gen-go-json: github.com/mitchellh/protoc-gen-go-json@v1.0.0
     protoc-gen-grpc-gateway: github.com/grpc-ecosystem/grpc-gateway/v2/protoc-gen-grpc-gateway@v2.5.0
 # 必填，定义了编译proto文件时 protoc 的参数
+# 在options里，你仍然可以像在 importPaths 中一样使用像 $GOPATH、$SOURCE_RELATIVE、$GOGO_PROTOBUF这样的变量
 options:
     - --go_out=paths=source_relative:.
     - --go-json_out=.

@@ -21,14 +21,11 @@ import (
 	"os"
 	"strings"
 	"sync"
-	"time"
 
 	"github.com/storyicon/powerproto/pkg/consts"
 	"github.com/storyicon/powerproto/pkg/util"
 	"github.com/storyicon/powerproto/pkg/util/logger"
 )
-
-var defaultExecuteTimeout = time.Second * 60
 
 // PluginManager is used to manage plugins
 type PluginManager interface {
@@ -40,6 +37,8 @@ type PluginManager interface {
 	IsPluginInstalled(ctx context.Context, path string, version string) (bool, string, error)
 	// InstallPlugin is used to install plugin
 	InstallPlugin(ctx context.Context, path string, version string) (local string, err error)
+	// GetPathForPlugin is used to get path for plugin executable file
+	GetPathForPlugin(ctx context.Context, path string, version string) (local string, err error)
 
 	// GetGitRepoLatestVersion is used to get the latest version of google apis
 	GetGitRepoLatestVersion(ctx context.Context, uri string) (string, error)
@@ -47,8 +46,8 @@ type PluginManager interface {
 	InstallGitRepo(ctx context.Context, uri string, commitId string) (local string, err error)
 	// IsGitRepoInstalled is used to check whether the protoc is installed
 	IsGitRepoInstalled(ctx context.Context, uri string, commitId string) (bool, string, error)
-	// GitRepoPath  returns the googleapis path
-	GitRepoPath(ctx context.Context, commitId string) string
+	// GitRepoPath returns the git repo path
+	GitRepoPath(ctx context.Context, commitId string) (string, error)
 
 	// GetProtocLatestVersion is used to get the latest version of protoc
 	GetProtocLatestVersion(ctx context.Context) (string, error)
@@ -59,7 +58,9 @@ type PluginManager interface {
 	// InstallProtoc is used to install protoc of specified version
 	InstallProtoc(ctx context.Context, version string) (local string, err error)
 	// IncludePath returns the default include path
-	IncludePath(ctx context.Context) string
+	IncludePath(ctx context.Context) (string, error)
+	// GetPathForProtoc is used to get the path of protoc
+	GetPathForProtoc(ctx context.Context, version string) (string, error)
 }
 
 // Config defines the config of PluginManager
@@ -98,6 +99,9 @@ func NewBasicPluginManager(storageDir string, log logger.Logger) (*BasicPluginMa
 
 // GetPluginLatestVersion is used to get the latest version of plugin
 func (b *BasicPluginManager) GetPluginLatestVersion(ctx context.Context, path string) (string, error) {
+	ctx, cancel := consts.GetContextWithPerCommandTimeout(ctx)
+	defer cancel()
+
 	versions, err := b.ListPluginVersions(ctx, path)
 	if err != nil {
 		return "", err
@@ -110,7 +114,7 @@ func (b *BasicPluginManager) GetPluginLatestVersion(ctx context.Context, path st
 
 // ListPluginVersions is used to list the versions of plugin
 func (b *BasicPluginManager) ListPluginVersions(ctx context.Context, path string) ([]string, error) {
-	ctx, cancel := context.WithTimeout(ctx, defaultExecuteTimeout)
+	ctx, cancel := consts.GetContextWithPerCommandTimeout(ctx)
 	defer cancel()
 
 	b.versionsLock.RLock()
@@ -134,6 +138,11 @@ func (b *BasicPluginManager) IsPluginInstalled(ctx context.Context, path string,
 	return IsPluginInstalled(ctx, b.storageDir, path, version)
 }
 
+// GetPathForPlugin is used to get path for plugin executable file
+func (b *BasicPluginManager) GetPathForPlugin(ctx context.Context, path string, version string) (local string, err error) {
+	return PathForPlugin(b.storageDir, path, version)
+}
+
 // InstallPlugin is used to install plugin
 func (b *BasicPluginManager) InstallPlugin(ctx context.Context, path string, version string) (local string, err error) {
 	return InstallPluginUsingGo(ctx, b.Logger, b.storageDir, path, version)
@@ -146,8 +155,9 @@ func (b *BasicPluginManager) GetGitRepoLatestVersion(ctx context.Context, url st
 
 // InstallGitRepo is used to install google apis
 func (b *BasicPluginManager) InstallGitRepo(ctx context.Context, uri string, commitId string) (string, error) {
-	ctx, cancel := context.WithTimeout(ctx, defaultExecuteTimeout)
+	ctx, cancel := consts.GetContextWithPerCommandTimeout(ctx)
 	defer cancel()
+
 	exists, local, err := b.IsGitRepoInstalled(ctx, uri, commitId)
 	if err != nil {
 		return "", err
@@ -182,8 +192,8 @@ func (b *BasicPluginManager) IsGitRepoInstalled(ctx context.Context, uri string,
 }
 
 // GitRepoPath returns the googleapis path
-func (b *BasicPluginManager) GitRepoPath(ctx context.Context, commitId string) string {
-	return PathForGitRepos(b.storageDir, commitId)
+func (b *BasicPluginManager) GitRepoPath(ctx context.Context, commitId string) (string, error) {
+	return PathForGitRepos(b.storageDir, commitId), nil
 }
 
 // IsProtocInstalled is used to check whether the protoc is installed
@@ -196,6 +206,9 @@ func (b *BasicPluginManager) IsProtocInstalled(ctx context.Context, version stri
 
 // GetProtocLatestVersion is used to geet the latest version of protoc
 func (b *BasicPluginManager) GetProtocLatestVersion(ctx context.Context) (string, error) {
+	ctx, cancel := consts.GetContextWithPerCommandTimeout(ctx)
+	defer cancel()
+
 	versions, err := b.ListProtocVersions(ctx)
 	if err != nil {
 		return "", err
@@ -208,7 +221,7 @@ func (b *BasicPluginManager) GetProtocLatestVersion(ctx context.Context) (string
 
 // ListProtocVersions is used to list protoc version
 func (b *BasicPluginManager) ListProtocVersions(ctx context.Context) ([]string, error) {
-	ctx, cancel := context.WithTimeout(ctx, defaultExecuteTimeout)
+	ctx, cancel := consts.GetContextWithPerCommandTimeout(ctx)
 	defer cancel()
 
 	b.versionsLock.RLock()
@@ -227,14 +240,16 @@ func (b *BasicPluginManager) ListProtocVersions(ctx context.Context) ([]string, 
 	return versions, nil
 }
 
+// GetPathForProtoc is used to get the path for protoc
+func (b *BasicPluginManager) GetPathForProtoc(ctx context.Context, version string) (string, error) {
+	return PathForProtoc(b.storageDir, version), nil
+}
+
 // InstallProtoc is used to install protoc of specified version
 func (b *BasicPluginManager) InstallProtoc(ctx context.Context, version string) (string, error) {
-	ctx, cancel := context.WithTimeout(ctx, defaultExecuteTimeout)
+	ctx, cancel := consts.GetContextWithPerCommandTimeout(ctx)
 	defer cancel()
 
-	if strings.HasPrefix(version, "v") {
-		version = strings.TrimPrefix(version, "v")
-	}
 	local := PathForProtoc(b.storageDir, version)
 	exists, err := util.IsFileExists(local)
 	if err != nil {
@@ -266,6 +281,6 @@ func (b *BasicPluginManager) InstallProtoc(ctx context.Context, version string) 
 }
 
 // IncludePath returns the default include path
-func (b *BasicPluginManager) IncludePath(ctx context.Context) string {
-	return PathForInclude(b.storageDir)
+func (b *BasicPluginManager) IncludePath(ctx context.Context) (string, error) {
+	return PathForInclude(b.storageDir), nil
 }

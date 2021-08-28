@@ -117,9 +117,9 @@ func GetExitCode(err error) int {
 
 var regexpEnvironmentVar = regexp.MustCompile(`\$[A-Za-z_]+`)
 
-// RenderPathWithEnv is used to render path with environment
-func RenderPathWithEnv(path string, ext map[string]string) string {
-	matches := regexpEnvironmentVar.FindAllString(path, -1)
+// RenderWithEnv is used to render string with env
+func RenderWithEnv(s string, ext map[string]string) string {
+	matches := regexpEnvironmentVar.FindAllString(s, -1)
 	for _, match := range matches {
 		key := match[1:]
 		val := ext[key]
@@ -127,10 +127,15 @@ func RenderPathWithEnv(path string, ext map[string]string) string {
 			val = os.Getenv(key)
 		}
 		if val != "" {
-			path = strings.ReplaceAll(path, match, val)
+			s = strings.ReplaceAll(s, match, val)
 		}
 	}
-	return filepath.Clean(path)
+	return s
+}
+
+// RenderPathWithEnv is used to render path with environment
+func RenderPathWithEnv(path string, ext map[string]string) string {
+	return filepath.Clean(RenderWithEnv(path, ext))
 }
 
 // SplitGoPackageVersion is used to split go package version

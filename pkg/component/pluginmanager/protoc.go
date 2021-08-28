@@ -53,6 +53,9 @@ func (p *ProtocRelease) Clear() error {
 
 // GetProtocRelease is used to download protoc release
 func GetProtocRelease(ctx context.Context, version string) (*ProtocRelease, error) {
+	if strings.HasPrefix(version, "v") {
+		version = strings.TrimPrefix(version, "v")
+	}
 	workspace, err := os.MkdirTemp("", "")
 	if err != nil {
 		return nil, err

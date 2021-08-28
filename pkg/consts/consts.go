@@ -31,9 +31,10 @@ const (
 	KeyNamePowerProtocInclude = "POWERPROTO_INCLUDE"
 	// The default include can be referenced by this key in import paths
 	KeyPowerProtoInclude = "$" + KeyNamePowerProtocInclude
+	KeyNameSourceRelative = "SOURCE_RELATIVE"
 	// KeySourceRelative can be specified in import paths to refer to
 	// the folder where the current proto file is located
-	KeySourceRelative = "$SOURCE_RELATIVE"
+	KeySourceRelative = "$" + KeyNameSourceRelative
 	// Defines the program directory of PowerProto, including various binary and include files
 	EnvHomeDir = "POWERPROTO_HOME"
 	// ProtobufRepository defines the protobuf repository
