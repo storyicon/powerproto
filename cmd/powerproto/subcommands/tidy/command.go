@@ -18,6 +18,7 @@ import (
 	"context"
 	"os"
 	"path/filepath"
+	"time"
 
 	"github.com/spf13/cobra"
 
@@ -62,11 +63,13 @@ func tidy(ctx context.Context,
 // You can also explicitly specify the configuration file to clean up
 func CommandTidy(log logger.Logger) *cobra.Command {
 	var debugMode bool
+	perCommandTimeout := time.Second * 300
 	cmd := &cobra.Command{
 		Use:   "tidy [config file]",
 		Short: "tidy the config file. It will replace the version number and install the protoc and proto plugins that declared in the config file",
 		Run: func(cmd *cobra.Command, args []string) {
 			ctx := cmd.Context()
+			ctx = consts.WithPerCommandTimeout(ctx, perCommandTimeout)
 			log.SetLogLevel(logger.LevelInfo)
 			if debugMode {
 				log.SetLogLevel(logger.LevelDebug)
@@ -121,5 +124,6 @@ func CommandTidy(log logger.Logger) *cobra.Command {
 	}
 	flags := cmd.PersistentFlags()
 	flags.BoolVarP(&debugMode, "debug", "d", debugMode, "debug mode")
+	flags.DurationVarP(&perCommandTimeout, "timeout", "t", perCommandTimeout, "execution timeout for per command")
 	return cmd
 }

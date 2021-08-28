@@ -18,6 +18,7 @@ import (
 	"net/url"
 	"path"
 	"path/filepath"
+	"strings"
 
 	"golang.org/x/mod/module"
 
@@ -31,6 +32,9 @@ func PathForInclude(storageDir string) string {
 
 // PathForProtoc is used to get the local binary location where the specified version protoc should be stored
 func PathForProtoc(storageDir string, version string) string {
+	if strings.HasPrefix(version, "v") {
+		version = strings.TrimPrefix(version, "v")
+	}
 	return filepath.Join(storageDir, "protoc", version, util.GetBinaryFileName("protoc"))
 }
 
@@ -72,6 +76,7 @@ func PathForPluginDir(storageDir string, path string, version string) (string, e
 }
 
 // PathForPlugin is used to get the binary path of plugin
+// Path: e.g "google.golang.org/protobuf/cmd/protoc-gen-go"
 func PathForPlugin(storageDir string, path string, version string) (string, error) {
 	name := GetGoPkgExecName(path)
 	dir, err := PathForPluginDir(storageDir, path, version)

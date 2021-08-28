@@ -18,6 +18,7 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
+	"time"
 
 	"github.com/spf13/cobra"
 
@@ -51,6 +52,7 @@ func CommandBuild(log logger.Logger) *cobra.Command {
 	var dryRun bool
 	var debugMode bool
 	var postScriptEnabled bool
+	perCommandTimeout := time.Second * 300
 	cmd := &cobra.Command{
 		Use:   "build [dir|proto file]",
 		Short: "compile proto files",
@@ -59,6 +61,7 @@ func CommandBuild(log logger.Logger) *cobra.Command {
 		Run: func(cmd *cobra.Command, args []string) {
 			log.SetLogLevel(logger.LevelInfo)
 			ctx := cmd.Context()
+			ctx = consts.WithPerCommandTimeout(ctx, perCommandTimeout)
 			if debugMode {
 				ctx = consts.WithDebugMode(ctx)
 				log.LogWarn(nil, "running in debug mode")
@@ -122,5 +125,6 @@ func CommandBuild(log logger.Logger) *cobra.Command {
 	flags.BoolVarP(&postScriptEnabled, "postScriptEnabled", "p", postScriptEnabled, "when this flag is attached, it will allow the execution of postActions and postShell")
 	flags.BoolVarP(&debugMode, "debug", "d", debugMode, "debug mode")
 	flags.BoolVarP(&dryRun, "dryRun", "y", dryRun, "dryRun mode")
+	flags.DurationVarP(&perCommandTimeout, "timeout", "t", perCommandTimeout, "execution timeout for per command")
 	return cmd
 }

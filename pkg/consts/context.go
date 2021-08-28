@@ -16,12 +16,31 @@ package consts
 
 import (
 	"context"
+	"time"
 )
 
 type debugMode struct{}
 type dryRun struct{}
 type ignoreDryRun struct{}
 type disableAction struct{}
+type perCommandTimeout struct{}
+
+func GetContextWithPerCommandTimeout(ctx context.Context) (context.Context, context.CancelFunc) {
+	val := ctx.Value(perCommandTimeout{})
+	if val == nil {
+		return ctx, func() {}
+	}
+	duration, ok := val.(time.Duration)
+	if !ok {
+		return ctx, func() {}
+	}
+	return context.WithTimeout(ctx, duration)
+}
+
+// WithPerCommandTimeout is used to inject per command timeout
+func WithPerCommandTimeout(ctx context.Context, timeout time.Duration) context.Context {
+	return context.WithValue(ctx, perCommandTimeout{}, timeout)
+}
 
 // WithDebugMode is used to set debug mode
 func WithDebugMode(ctx context.Context) context.Context {

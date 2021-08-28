@@ -44,12 +44,6 @@ type BasicCompiler struct {
 	logger.Logger
 	config        configs.ConfigItem
 	pluginManager pluginmanager.PluginManager
-
-	protocPath string
-	arguments  []string
-	// map[name]local
-	repositories map[string]string
-	dir          string
 }
 
 // NewCompiler is used to create a compiler
@@ -69,43 +63,28 @@ func NewBasicCompiler(
 	pluginManager pluginmanager.PluginManager,
 	config configs.ConfigItem,
 ) (*BasicCompiler, error) {
-	basic := &BasicCompiler{
+	return &BasicCompiler{
 		Logger:        log.NewLogger("compiler"),
 		config:        config,
 		pluginManager: pluginManager,
-	}
-	basic.repositories = map[string]string{
-		consts.KeyNamePowerProtocInclude: basic.pluginManager.IncludePath(ctx),
-	}
-	if err := basic.calcRepositories(ctx); err != nil {
-		return nil, err
-	}
-	if err := basic.calcProto(ctx); err != nil {
-		return nil, err
-	}
-	if err := basic.calcArguments(ctx); err != nil {
-		return nil, err
-	}
-	if err := basic.calcDir(ctx); err != nil {
-		return nil, err
-	}
-	return basic, nil
+	}, nil
 }
 
 // Compile is used to compile proto file
 func (b *BasicCompiler) Compile(ctx context.Context, protoFilePath string) error {
-	arguments := make([]string, len(b.arguments))
-	copy(arguments, b.arguments)
-
-	// contains source relative
-	if util.Contains(b.config.Config().ImportPaths,
-		consts.KeySourceRelative) {
-		arguments = append(arguments, "--proto_path="+filepath.Dir(protoFilePath))
+	dir := b.calcDir()
+	protocPath, err := b.calcProtocPath(ctx)
+	if err != nil {
+		return err
 	}
-	arguments = util.DeduplicateSliceStably(arguments)
+
+	arguments, err := b.calcArguments(ctx, protoFilePath)
+	if err != nil {
+		return err
+	}
 	arguments = append(arguments, protoFilePath)
-	_, err := command.Execute(ctx,
-		b.Logger, b.dir, b.protocPath, arguments, nil)
+	_, err = command.Execute(ctx,
+		b.Logger, dir, protocPath, arguments, nil)
 	if err != nil {
 		return &ErrCompile{
 			ErrCommandExec: err.(*command.ErrCommandExec),
@@ -119,99 +98,85 @@ func (b *BasicCompiler) GetConfig(ctx context.Context) configs.ConfigItem {
 	return b.config
 }
 
-func (b *BasicCompiler) calcDir(ctx context.Context) error {
+func (b *BasicCompiler) calcProtocPath(ctx context.Context) (string, error) {
+	return  b.pluginManager.GetPathForProtoc(ctx, b.config.Config().Protoc)
+}
+
+func (b *BasicCompiler) calcDir() string {
 	if dir := b.config.Config().ProtocWorkDir; dir != "" {
 		dir = util.RenderPathWithEnv(dir, nil)
 		if !filepath.IsAbs(dir) {
 			dir = filepath.Join(b.config.Path(), dir)
 		}
-		b.dir = dir
+		return dir
 	} else {
-		b.dir = filepath.Dir(b.config.Path())
+		return filepath.Dir(b.config.Path())
 	}
-	return nil
 }
 
-func (b *BasicCompiler) calcProto(ctx context.Context) error {
-	cfg := b.config
-	protocVersion := cfg.Config().Protoc
-	if protocVersion == "latest" {
-		latestVersion, err := b.pluginManager.GetProtocLatestVersion(ctx)
-		if err != nil {
-			return err
-		}
-		protocVersion = latestVersion
-	}
-	localPath, err := b.pluginManager.InstallProtoc(ctx, protocVersion)
+func (b *BasicCompiler) calcArguments(ctx context.Context, protoFilePath string) ([]string, error) {
+	variables, err := b.calcVariables(ctx, protoFilePath)
 	if err != nil {
-		return err
+		return nil, err
 	}
-	b.protocPath = localPath
-	return nil
-}
 
-func (b *BasicCompiler) calcArguments(ctx context.Context) error {
 	cfg := b.config
-	arguments := make([]string, len(cfg.Config().Options))
-	copy(arguments, cfg.Config().Options)
+	var arguments []string
 
-	dir := filepath.Dir(cfg.Path())
-	// build import paths
-Loop:
-	for _, path := range cfg.Config().ImportPaths {
-		if path == consts.KeySourceRelative {
-			continue Loop
+	// build plugin options
+	for name, pkg := range cfg.Config().Plugins {
+		path, version, ok := util.SplitGoPackageVersion(pkg)
+		if !ok {
+			return nil, errors.Errorf("failed to parse: %s", pkg)
 		}
-		path = util.RenderPathWithEnv(path, b.repositories)
+		local, err := b.pluginManager.GetPathForPlugin(ctx, path, version)
+		if err != nil {
+			return nil, errors.Wrap(err, "failed to get plugin path")
+		}
+		arg := fmt.Sprintf("--plugin=%s=%s", name, local)
+		arguments = append(arguments, arg)
+	}
+
+	// build compile options
+	for _, option := range cfg.Config().Options {
+		option = util.RenderWithEnv(option, variables)
+		arguments = append(arguments, option)
+	}
+
+	// build import paths
+	dir := filepath.Dir(cfg.Path())
+	for _, path := range cfg.Config().ImportPaths {
+		path = util.RenderPathWithEnv(path, variables)
 		if !filepath.IsAbs(path) {
 			path = filepath.Join(dir, path)
 		}
 		arguments = append(arguments, "--proto_path="+path)
 	}
 
-	// build plugin options
-	for name, pkg := range cfg.Config().Plugins {
-		path, version, ok := util.SplitGoPackageVersion(pkg)
-		if !ok {
-			return errors.Errorf("failed to parse: %s", pkg)
-		}
-		if version == "latest" {
-			latestVersion, err := b.pluginManager.GetPluginLatestVersion(ctx, path)
-			if err != nil {
-				return err
-			}
-			version = latestVersion
-		}
-		local, err := b.pluginManager.InstallPlugin(ctx, path, version)
-		if err != nil {
-			return errors.Wrap(err, "failed to get plugin path")
-		}
-		arg := fmt.Sprintf("--plugin=%s=%s", name, local)
-		arguments = append(arguments, arg)
-	}
-	b.arguments = arguments
-	return nil
+	arguments = util.DeduplicateSliceStably(arguments)
+
+	return arguments, nil
 }
 
-func (b *BasicCompiler) calcRepositories(ctx context.Context) error {
+func (b *BasicCompiler) calcVariables(ctx context.Context, protoFilePath string) (map[string]string, error) {
 	cfg := b.config
+	variables := map[string]string{}
 	for name, pkg := range cfg.Config().Repositories {
-		path, version, ok := util.SplitGoPackageVersion(pkg)
+		_, version, ok := util.SplitGoPackageVersion(pkg)
 		if !ok {
-			return errors.Errorf("failed to parse: %s", pkg)
+			return nil, errors.Errorf("failed to parse: %s", pkg)
 		}
-		if version == "latest" {
-			latestVersion, err := b.pluginManager.GetGitRepoLatestVersion(ctx, path)
-			if err != nil {
-				return err
-			}
-			version = latestVersion
-		}
-		local, err := b.pluginManager.InstallGitRepo(ctx, path, version)
+		repoPath, err := b.pluginManager.GitRepoPath(ctx, version)
 		if err != nil {
-			return errors.Wrap(err, "failed to get plugin path")
+			return nil, err
 		}
-		b.repositories[name] = local
+		variables[name] = repoPath
 	}
-	return nil
+	includePath, err := b.pluginManager.IncludePath(ctx)
+	if err != nil {
+		return nil, err
+	}
+	variables[consts.KeyNamePowerProtocInclude] = includePath
+	variables[consts.KeyNameSourceRelative] = filepath.Dir(protoFilePath)
+	return variables, nil
 }

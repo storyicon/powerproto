@@ -281,6 +281,7 @@ plugins:
     protoc-gen-go-json: github.com/mitchellh/protoc-gen-go-json@v1.0.0
     protoc-gen-grpc-gateway: github.com/grpc-ecosystem/grpc-gateway/v2/protoc-gen-grpc-gateway@v2.5.0
 # required. defines the parameters of protoc when compiling proto files
+# In options, you can still use variables like $GOPATH, $SOURCE_RELATIVE, $GOGO_PROTOBUF as in importPaths
 options:
     - --go_out=paths=source_relative:.
     - --go-json_out=.
