@@ -120,3 +120,50 @@ func TestSortSemanticVersion(t *testing.T) {
 		})
 	}
 }
+
+func TestIsRegularVersion(t *testing.T) {
+	type args struct {
+		s string
+	}
+	tests := []struct {
+		name string
+		args args
+		want bool
+	}{
+		{
+			args: args{"v0.0.0"},
+			want: true,
+		},
+		{
+			args: args{"v11.0.0"},
+			want: true,
+		},
+		{
+			args: args{"v0.11.0"},
+			want: true,
+		},
+		{
+			args: args{"v0.0.11"},
+			want: true,
+		},
+		{
+			args: args{"0.0.11"},
+			want: false,
+		},
+		{
+			args: args{"0.0.a"},
+			want: false,
+		},
+		{
+			args: args{"v0.0.1-rc0"},
+			want: false,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := IsRegularVersion(tt.args.s); got != tt.want {
+				t.Errorf("IsRegularVersion() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}

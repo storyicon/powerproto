@@ -115,7 +115,17 @@ func GetExitCode(err error) int {
 	return 1
 }
 
-var regexpEnvironmentVar = regexp.MustCompile(`\$[A-Za-z_]+`)
+var (
+	regexpEnvironmentVar = regexp.MustCompile(`\$[A-Za-z_]+`)
+	regexpRegularVersion = regexp.MustCompile(`^v[0-9]+\.[0-9]+\.[0-9]+$`)
+)
+
+
+// IsRegularVersion is used to determine whether the version number is a regular version number
+// Regular: va.b.c, and a, b, c are all numbers
+func IsRegularVersion(s string) bool {
+	return regexpRegularVersion.MatchString(s)
+}
 
 // RenderWithEnv is used to render string with env
 func RenderWithEnv(s string, ext map[string]string) string {
