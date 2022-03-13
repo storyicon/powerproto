@@ -345,7 +345,16 @@ func Compile(ctx context.Context, targets []string) error {
 			return err
 		}
 	} else {
-		log.LogWarn(nil, "PostAction and PostShell is skipped. If you need to allow execution, please append '-p' to command flags to enable")
+		displayWarn := false
+		for _, configItem := range configItems {
+			if len(configItem.Config().PostActions) > 0 || configItem.Config().PostShell != "" {
+				displayWarn = true
+				break
+			}
+		}
+		if displayWarn {
+			log.LogWarn(nil, "PostAction and PostShell is skipped. If you need to allow execution, please append '-p' to command flags to enable")
+		}
 	}
 
 	log.LogInfo(nil, "Good job! you are ready to go :)")
