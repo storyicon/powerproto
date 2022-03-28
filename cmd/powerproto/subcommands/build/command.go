@@ -52,6 +52,7 @@ func CommandBuild(log logger.Logger) *cobra.Command {
 	var dryRun bool
 	var debugMode bool
 	var postScriptEnabled bool
+	var batchCompile bool
 	perCommandTimeout := time.Second * 300
 	cmd := &cobra.Command{
 		Use:   "build [dir|proto file]",
@@ -73,6 +74,9 @@ func CommandBuild(log logger.Logger) *cobra.Command {
 			}
 			if !postScriptEnabled {
 				ctx = consts.WithDisableAction(ctx)
+			}
+			if batchCompile {
+				ctx = consts.WithBatchCompile(ctx)
 			}
 
 			target, err := filepath.Abs(args[0])
@@ -125,6 +129,7 @@ func CommandBuild(log logger.Logger) *cobra.Command {
 	flags.BoolVarP(&postScriptEnabled, "postScriptEnabled", "p", postScriptEnabled, "when this flag is attached, it will allow the execution of postActions and postShell")
 	flags.BoolVarP(&debugMode, "debug", "d", debugMode, "debug mode")
 	flags.BoolVarP(&dryRun, "dryRun", "y", dryRun, "dryRun mode")
+	flags.BoolVarP(&batchCompile, "batchCompile", "b", batchCompile, "compile all proto files in one protoc cmd, do not split into multi-commends")
 	flags.DurationVarP(&perCommandTimeout, "timeout", "t", perCommandTimeout, "execution timeout for per command")
 	return cmd
 }

@@ -20,6 +20,7 @@ import (
 	"io/ioutil"
 	"os"
 	"path/filepath"
+	"strings"
 
 	"github.com/bmatcuk/doublestar"
 	filecopy "github.com/otiai10/copy"
@@ -128,4 +129,24 @@ func GetFilesWithExt(dir string, targetExt string) ([]string, error) {
 		data = append(data, filepath.Join(dir, child.Name()))
 	}
 	return data, nil
+}
+
+// GetCommonRootDirOfPaths find the nearest common root dir
+func GetCommonRootDirOfPaths(filepaths []string) string {
+	rootDir := filepath.Dir(filepaths[0])
+	for _, path := range filepaths {
+		for {
+			// cur root dir contains this path
+			if strings.HasPrefix(path, rootDir) {
+				break
+			}
+			// goto outer dir
+			nextRootDir := filepath.Dir(rootDir)
+			if rootDir == nextRootDir {
+				break
+			}
+			rootDir = nextRootDir
+		}
+	}
+	return rootDir
 }

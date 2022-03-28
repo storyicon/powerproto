@@ -33,6 +33,8 @@ import (
 type Compiler interface {
 	// Compile is used to compile proto file
 	Compile(ctx context.Context, protoFilePath string) error
+	// BatchCompile is used to compile a batch of proto files
+	BatchCompile(ctx context.Context, protoFilePaths []string) error
 	// GetConfig is used to return config that the compiler used
 	GetConfig(ctx context.Context) configs.ConfigItem
 }
@@ -99,7 +101,7 @@ func (b *BasicCompiler) GetConfig(ctx context.Context) configs.ConfigItem {
 }
 
 func (b *BasicCompiler) calcProtocPath(ctx context.Context) (string, error) {
-	return  b.pluginManager.GetPathForProtoc(ctx, b.config.Config().Protoc)
+	return b.pluginManager.GetPathForProtoc(ctx, b.config.Config().Protoc)
 }
 
 func (b *BasicCompiler) calcDir() string {
@@ -179,4 +181,27 @@ func (b *BasicCompiler) calcVariables(ctx context.Context, protoFilePath string)
 	variables[consts.KeyNamePowerProtocInclude] = includePath
 	variables[consts.KeyNameSourceRelative] = filepath.Dir(protoFilePath)
 	return variables, nil
+}
+
+// BatchCompile is used to compile a batch of proto files
+func (b *BasicCompiler) BatchCompile(ctx context.Context, protoFilePaths []string) error {
+	dir := b.calcDir()
+	protocPath, err := b.calcProtocPath(ctx)
+	if err != nil {
+		return err
+	}
+
+	arguments, err := b.calcArguments(ctx, util.GetCommonRootDirOfPaths(protoFilePaths))
+	if err != nil {
+		return err
+	}
+	arguments = append(arguments, protoFilePaths...)
+	_, err = command.Execute(ctx,
+		b.Logger, dir, protocPath, arguments, nil)
+	if err != nil {
+		return &ErrCompile{
+			ErrCommandExec: err.(*command.ErrCommandExec),
+		}
+	}
+	return nil
 }

@@ -23,6 +23,7 @@ type debugMode struct{}
 type dryRun struct{}
 type ignoreDryRun struct{}
 type disableAction struct{}
+type batchCompile struct{}
 type perCommandTimeout struct{}
 
 func GetContextWithPerCommandTimeout(ctx context.Context) (context.Context, context.CancelFunc) {
@@ -63,6 +64,11 @@ func WithDryRun(ctx context.Context) context.Context {
 	return context.WithValue(ctx, dryRun{}, "true")
 }
 
+// WithBatchCompile is used to inject batchCompile flag into context
+func WithBatchCompile(ctx context.Context) context.Context {
+	return context.WithValue(ctx, batchCompile{}, "true")
+}
+
 // IsDebugMode is used to decide whether to disable PostAction and PostShell
 func IsDebugMode(ctx context.Context) bool {
 	return ctx.Value(debugMode{}) != nil
@@ -81,4 +87,9 @@ func IsIgnoreDryRun(ctx context.Context) bool {
 // IsDryRun is used to determine whether it is currently in DryRun mode
 func IsDryRun(ctx context.Context) bool {
 	return ctx.Value(dryRun{}) != nil
+}
+
+// IsBatchCompile is used to determine whether it is currently in BatchCompile mode
+func IsBatchCompile(ctx context.Context) bool {
+	return ctx.Value(batchCompile{}) != nil
 }

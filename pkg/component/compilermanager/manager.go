@@ -20,6 +20,7 @@ import (
 
 	"github.com/storyicon/powerproto/pkg/component/configmanager"
 	"github.com/storyicon/powerproto/pkg/component/pluginmanager"
+	"github.com/storyicon/powerproto/pkg/util"
 	"github.com/storyicon/powerproto/pkg/util/logger"
 )
 
@@ -27,6 +28,8 @@ import (
 type CompilerManager interface {
 	// GetCompiler is used to get compiler of specified proto file path
 	GetCompiler(ctx context.Context, protoFilePath string) (Compiler, error)
+	// GetBatchCompiler is used to get compiler of batch proto file paths
+	GetBatchCompiler(ctx context.Context, protoFilePaths []string) (Compiler, error)
 }
 
 // BasicCompilerManager is the basic implement of CompilerManager
@@ -85,4 +88,15 @@ func (b *BasicCompilerManager) GetCompiler(ctx context.Context, protoFilePath st
 	}
 	b.tree[config.ID()] = compiler
 	return compiler, nil
+}
+
+func (b *BasicCompilerManager) GetBatchCompiler(ctx context.Context, protoFilePaths []string) (Compiler, error) {
+	rootDir := util.GetCommonRootDirOfPaths(protoFilePaths)
+	b.LogInfo(nil, "Get Batch RootDir: %s", rootDir)
+
+	config, err := b.configManager.GetConfig(ctx, rootDir)
+	if err != nil {
+		return nil, err
+	}
+	return NewCompiler(ctx, b.Logger, b.pluginManager, config)
 }

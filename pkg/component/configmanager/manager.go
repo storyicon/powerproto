@@ -29,7 +29,7 @@ import (
 
 // ConfigManager is used to manage config
 type ConfigManager interface {
-	// GetCompiler is used to get config of specified proto file path
+	// GetConfig is used to get config of specified proto file path
 	GetConfig(ctx context.Context, protoFilePath string) (configs.ConfigItem, error)
 }
 

@@ -234,6 +234,17 @@ func StepCompile(ctx context.Context,
 	compilerManager compilermanager.CompilerManager,
 	targets []string,
 ) error {
+	if consts.IsBatchCompile(ctx) {
+		comp, err := compilerManager.GetBatchCompiler(ctx, targets)
+		if err != nil {
+			return err
+		}
+		if err := comp.BatchCompile(ctx, targets); err != nil {
+			return err
+		}
+		return nil
+	}
+
 	progress := progressbar.GetProgressBar(ctx, len(targets))
 	progress.SetPrefix("Compile Proto Files")
 	c := concurrent.NewErrGroup(ctx, 10)
