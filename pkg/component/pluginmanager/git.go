@@ -24,10 +24,10 @@ import (
 	"strings"
 
 	"github.com/mholt/archiver"
-	"github.com/storyicon/powerproto/pkg/util"
+	"github.com/ppaanngggg/powerproto/pkg/util"
 
-	"github.com/storyicon/powerproto/pkg/util/command"
-	"github.com/storyicon/powerproto/pkg/util/logger"
+	"github.com/ppaanngggg/powerproto/pkg/util/command"
+	"github.com/ppaanngggg/powerproto/pkg/util/logger"
 )
 
 // ErrGitList defines the git list error

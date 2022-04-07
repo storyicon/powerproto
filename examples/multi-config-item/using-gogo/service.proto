@@ -4,7 +4,7 @@ import "github.com/gogo/protobuf/gogoproto/gogo.proto";
 import "google/api/annotations.proto";
 
 package powerproto.examples.using_gogo;
-option go_package = "github.com/storyicon/powerproto/examples/using_gogo/apis;apis";
+option go_package = "github.com/ppaanngggg/powerproto/examples/using_gogo/apis;apis";
 
 option java_multiple_files = true;
 option java_package = "com.powerproto.examples.using_gogo";

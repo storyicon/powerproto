@@ -18,10 +18,10 @@ import (
 	"context"
 	"sync"
 
-	"github.com/storyicon/powerproto/pkg/component/configmanager"
-	"github.com/storyicon/powerproto/pkg/component/pluginmanager"
-	"github.com/storyicon/powerproto/pkg/util"
-	"github.com/storyicon/powerproto/pkg/util/logger"
+	"github.com/ppaanngggg/powerproto/pkg/component/configmanager"
+	"github.com/ppaanngggg/powerproto/pkg/component/pluginmanager"
+	"github.com/ppaanngggg/powerproto/pkg/util"
+	"github.com/ppaanngggg/powerproto/pkg/util/logger"
 )
 
 // CompilerManager is to manage compiler

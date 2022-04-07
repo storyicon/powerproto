@@ -1,7 +1,7 @@
 syntax = "proto3";
 
 package powerproto.examples.greeter;
-option go_package = "github.com/storyicon/powerproto/examples/greeter/apis;apis";
+option go_package = "github.com/ppaanngggg/powerproto/examples/greeter/apis;apis";
 
 service Greeter {
     rpc SayHello (HelloRequest) returns (HelloReply);

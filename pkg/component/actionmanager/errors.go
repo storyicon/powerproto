@@ -17,7 +17,7 @@ package actionmanager
 import (
 	"fmt"
 
-	"github.com/storyicon/powerproto/pkg/util/command"
+	"github.com/ppaanngggg/powerproto/pkg/util/command"
 )
 
 // ErrPostShell defines the post shell command error

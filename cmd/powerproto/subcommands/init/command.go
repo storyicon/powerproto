@@ -18,10 +18,10 @@ import (
 	"github.com/AlecAivazis/survey/v2"
 	"github.com/spf13/cobra"
 
-	"github.com/storyicon/powerproto/pkg/configs"
-	"github.com/storyicon/powerproto/pkg/consts"
-	"github.com/storyicon/powerproto/pkg/util"
-	"github.com/storyicon/powerproto/pkg/util/logger"
+	"github.com/ppaanngggg/powerproto/pkg/configs"
+	"github.com/ppaanngggg/powerproto/pkg/consts"
+	"github.com/ppaanngggg/powerproto/pkg/util"
+	"github.com/ppaanngggg/powerproto/pkg/util/logger"
 )
 
 // UserPreference defines the model of user preference

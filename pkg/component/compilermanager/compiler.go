@@ -21,12 +21,12 @@ import (
 
 	"github.com/pkg/errors"
 
-	"github.com/storyicon/powerproto/pkg/component/pluginmanager"
-	"github.com/storyicon/powerproto/pkg/configs"
-	"github.com/storyicon/powerproto/pkg/consts"
-	"github.com/storyicon/powerproto/pkg/util"
-	"github.com/storyicon/powerproto/pkg/util/command"
-	"github.com/storyicon/powerproto/pkg/util/logger"
+	"github.com/ppaanngggg/powerproto/pkg/component/pluginmanager"
+	"github.com/ppaanngggg/powerproto/pkg/configs"
+	"github.com/ppaanngggg/powerproto/pkg/consts"
+	"github.com/ppaanngggg/powerproto/pkg/util"
+	"github.com/ppaanngggg/powerproto/pkg/util/command"
+	"github.com/ppaanngggg/powerproto/pkg/util/logger"
 )
 
 // Compiler is used to compile proto file

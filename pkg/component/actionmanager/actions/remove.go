@@ -21,8 +21,8 @@ import (
 
 	"github.com/pkg/errors"
 
-	"github.com/storyicon/powerproto/pkg/consts"
-	"github.com/storyicon/powerproto/pkg/util/logger"
+	"github.com/ppaanngggg/powerproto/pkg/consts"
+	"github.com/ppaanngggg/powerproto/pkg/util/logger"
 )
 
 // ActionRemove is used to delete directories or files

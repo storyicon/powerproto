@@ -23,8 +23,8 @@ import (
 
 	"github.com/pkg/errors"
 
-	"github.com/storyicon/powerproto/pkg/configs"
-	"github.com/storyicon/powerproto/pkg/util/logger"
+	"github.com/ppaanngggg/powerproto/pkg/configs"
+	"github.com/ppaanngggg/powerproto/pkg/util/logger"
 )
 
 // ConfigManager is used to manage config

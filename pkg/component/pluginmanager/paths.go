@@ -22,7 +22,7 @@ import (
 
 	"golang.org/x/mod/module"
 
-	"github.com/storyicon/powerproto/pkg/util"
+	"github.com/ppaanngggg/powerproto/pkg/util"
 )
 
 // PathForInclude is used to get the local directory of include files

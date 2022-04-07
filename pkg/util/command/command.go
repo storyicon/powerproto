@@ -21,9 +21,9 @@ import (
 	"os"
 	"os/exec"
 
-	"github.com/storyicon/powerproto/pkg/consts"
-	"github.com/storyicon/powerproto/pkg/util"
-	"github.com/storyicon/powerproto/pkg/util/logger"
+	"github.com/ppaanngggg/powerproto/pkg/consts"
+	"github.com/ppaanngggg/powerproto/pkg/util"
+	"github.com/ppaanngggg/powerproto/pkg/util/logger"
 )
 
 // Execute is used to execute commands, return stdout and execute errors
