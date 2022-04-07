@@ -128,6 +128,9 @@ powerproto build .
 
 // Compile all proto files in the current directory recursively, including subfolders.
 powerproto build -r .
+
+// Compile all proto files in the current directory recursively, and only run one protoc cmd
+powerproto build -r -b .
 ```
 
 The execution logic is that for each proto file, the `powerproto.yaml` config file will be searched from the directory where the proto file is located to the ancestor directory:
