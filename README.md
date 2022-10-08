@@ -276,7 +276,7 @@ plugins:
     # the name, path, and version number of the plugin.
     # the address of the plugin must be in path@version format, 
     # and version can be filled with 'latest', which will be automatically converted to the latest version.
-    protoc-gen-deepcopy: istio.io/tools/cmd/protoc-gen-deepcopy@latest
+    protoc-gen-golang-deepcopy: istio.io/tools/cmd/protoc-gen-golang-deepcopy@latest
     protoc-gen-go: google.golang.org/protobuf/cmd/protoc-gen-go@latest
     protoc-gen-go-json: github.com/mitchellh/protoc-gen-go-json@v1.0.0
     protoc-gen-grpc-gateway: github.com/grpc-ecosystem/grpc-gateway/v2/protoc-gen-grpc-gateway@v2.5.0

@@ -261,7 +261,7 @@ repositories:
 plugins:
     # 插件的名字、路径以及版本号。
     # 插件的地址必须是 path@version 的格式，version可以填latest，会自动转换成最新的版本。
-    protoc-gen-deepcopy: istio.io/tools/cmd/protoc-gen-deepcopy@latest
+    protoc-gen-golang-deepcopy: istio.io/tools/cmd/protoc-gen-golang-deepcopy@latest
     protoc-gen-go: google.golang.org/protobuf/cmd/protoc-gen-go@latest
     protoc-gen-go-json: github.com/mitchellh/protoc-gen-go-json@v1.0.0
     protoc-gen-grpc-gateway: github.com/grpc-ecosystem/grpc-gateway/v2/protoc-gen-grpc-gateway@v2.5.0
