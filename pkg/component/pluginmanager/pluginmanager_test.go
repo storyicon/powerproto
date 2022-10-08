@@ -85,4 +85,22 @@ var _ = Describe("PluginManager", func() {
 		Expect(exists).To(BeTrue())
 		Expect(len(local) != 0).To(BeTrue())
 	})
+	It("should install protoc version 3.21.7 with the new versioning format", func() {
+		latestVersion := "v3.21.7"
+		local, err := manager.InstallProtoc(context.TODO(), latestVersion)
+		Expect(err).To(BeNil())
+		exists, local, err := manager.IsProtocInstalled(context.TODO(), latestVersion)
+		Expect(err).To(BeNil())
+		Expect(exists).To(BeTrue())
+		Expect(len(local) != 0).To(BeTrue())
+	})
+	It("should install protoc version 3.20.3 with the old versioning format", func() {
+		latestVersion := "v3.20.3"
+		local, err := manager.InstallProtoc(context.TODO(), latestVersion)
+		Expect(err).To(BeNil())
+		exists, local, err := manager.IsProtocInstalled(context.TODO(), latestVersion)
+		Expect(err).To(BeNil())
+		Expect(exists).To(BeTrue())
+		Expect(len(local) != 0).To(BeTrue())
+	})
 })
