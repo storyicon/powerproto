@@ -22,13 +22,23 @@ import (
 	"net/http"
 	"os"
 	"path/filepath"
+	"regexp"
 	"runtime"
+	"strconv"
 	"strings"
 
 	"github.com/mholt/archiver"
 	"github.com/pkg/errors"
 
 	"github.com/storyicon/powerproto/pkg/util"
+)
+
+const (
+	protocVersionStandardization = 21.7
+)
+
+var (
+	protocVersioning = regexp.MustCompile(`^(\d)+\.(\d+\.\d+)+$`)
 )
 
 // ProtocRelease defines the release of protoc
@@ -56,10 +66,33 @@ func GetProtocRelease(ctx context.Context, version string) (*ProtocRelease, erro
 	if strings.HasPrefix(version, "v") {
 		version = strings.TrimPrefix(version, "v")
 	}
+
+	// Version string must match the regular expression for Protocol versions
+	if !protocVersioning.MatchString(version) {
+		return nil, errors.Errorf("invalid protoc version: %s", version)
+	}
+
 	workspace, err := os.MkdirTemp("", "")
 	if err != nil {
 		return nil, err
 	}
+
+	versionComponents := protocVersioning.FindStringSubmatch(version)
+	if len(versionComponents) < 3 {
+		err = errors.Errorf("invalid protoc version: %s. Expected minor and major versions", version)
+		return nil, err
+	}
+	minorPatchVersionStr := versionComponents[2]
+	minorPatchVersionDec := 0.0
+	if minorPatchVersionDec, err = strconv.ParseFloat(minorPatchVersionStr, 64); err != nil {
+		err = errors.Wrapf(err, "invalid protoc minor version: %s", minorPatchVersionStr)
+		return nil, err
+	}
+
+	if minorPatchVersionDec >= protocVersionStandardization {
+		version = minorPatchVersionStr
+	}
+
 	suffix, err := inferProtocReleaseSuffix()
 	if err != nil {
 		return nil, err
