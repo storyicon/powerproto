@@ -108,7 +108,7 @@ func GetWellKnownPlugins() []*Plugin {
 			Name: "protoc-gen-golang-deepcopy",
 			Pkg:  "istio.io/tools/cmd/protoc-gen-golang-deepcopy@latest",
 			Options: []string{
-				"--deepcopy_out=source_relative:.",
+				"--golang-deepcopy_out=source_relative:.",
 			},
 		},
 		{
