@@ -165,7 +165,7 @@ func (b *BasicPluginManager) InstallGitRepo(ctx context.Context, uri string, com
 	if exists {
 		return local, nil
 	}
-	release, err := GetGithubArchive(ctx, uri, commitId)
+	release, err := GetGitRepository(ctx, uri, commitId, b.Logger)
 	if err != nil {
 		return "", err
 	}
