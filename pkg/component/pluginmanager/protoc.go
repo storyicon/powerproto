@@ -126,7 +126,14 @@ func inferProtocReleaseSuffix() (string, error) {
 			return "linux-x86_64", nil
 		}
 	case "darwin":
-		return "osx-x86_64", nil
+		switch arch {
+		case "arm64":
+			return "osx-aarch_64", nil
+		case "amd64":
+			return "osx-x86_64", nil
+		default:
+			return "osx-universal_binary", nil
+		}
 	case "windows":
 		switch arch {
 		case "386":
